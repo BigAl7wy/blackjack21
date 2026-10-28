@@ -1,0 +1,26 @@
+{
+  "name": "21 Blackjack Casino Suite",
+  "short_name": "21 Blackjack",
+  "description": "Single-deck and multi-deck 21 (Blackjack) with Basic Strategy Coach, Hi-Lo Card Counter, Pair Splitting, Perfect Pairs, and 21+3 Poker side bets.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#064e3b",
+  "theme_color": "#064e3b",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

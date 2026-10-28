@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>21 Card Game - Step 14: Quick Wager Buttons & Complete Casino Suite</title>
+  <meta name="theme-color" content="#064e3b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="tailwind-offline.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background 0.35s ease;
+    }
+    .felt-bg,
+    .theme-emerald {
+      background: radial-gradient(circle at center, #14532d 0%, #064e3b 70%, #022c22 100%);
+    }
+    .theme-midnight {
+      background: radial-gradient(circle at center, #1e3a8a 0%, #172554 70%, #090d16 100%);
+    }
+    .theme-crimson {
+      background: radial-gradient(circle at center, #7f1d1d 0%, #450a0a 70%, #1f0404 100%);
+    }
+    .card-enter {
+      animation: dealCard 0.25s ease-out forwards;
+    }
+    .card-back,
+    .card-back-classic {
+      background: repeating-linear-gradient(
+        45deg,
+        #1e3a8a,
+        #1e3a8a 6px,
+        #1d4ed8 6px,
+        #1d4ed8 12px
+      );
+    }
+    .card-back-obsidian {
+      background: repeating-linear-gradient(
+        135deg,
+        #0f172a,
+        #0f172a 6px,
+        #334155 6px,
+        #334155 12px
+      );
+    }
+    .card-back-vintage {
+      background: repeating-linear-gradient(
+        45deg,
+        #7f1d1d,
+        #7f171d 6px,
+        #b45309 6px,
+        #b45309 12px
+      );
+    }
+    @keyframes dealCard {
+      from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  </style>
+</head>
+<body id="app-body" class="felt-bg theme-emerald min-h-screen text-white flex flex-col items-center justify-between p-5 sm:p-8 select-none">
+
+  <!-- Top Header: Ultra-clean single row (Settings moved into collapsible Settings drawer) -->
+  <header class="w-full max-w-3xl flex flex-wrap items-center justify-between gap-3 border-b border-white/15 pb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-amber-400 text-emerald-950 font-extrabold px-3 py-1.5 rounded-xl text-base tracking-tight shadow">21</span>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight">21 Card Game</h1>
+        <p class="text-xs text-emerald-200/80">Step 14: Quick Wager Adjusters (½x, 2x, Max), 21+3 Poker &amp; Complete Casino Suite</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm bg-black/35 border border-white/15 px-4 py-2 rounded-full">
+      <span class="text-emerald-300">Wins: <strong id="wins-count" class="text-emerald-400">0</strong></span>
+      <span class="text-white/30">|</span>
+      <span class="text-emerald-300">Losses: <strong id="losses-count" class="text-rose-400">0</strong></span>
+      <span class="text-white/30">|</span>
+      <span class="text-emerald-300">Pushes: <strong id="pushes-count" class="text-amber-300">0</strong></span>
+      <span class="text-white/30">|</span>
+      <span class="text-emerald-300">Shoe: <strong id="deck-count" class="text-white">52</strong> (<span id="hands-played">0</span>)</span>
+    </div>
+  </header>
+
+  <!-- Main Table Area: Generous vertical spacing (gap-5) -->
+  <main class="w-full max-w-3xl my-auto py-6 flex flex-col items-center gap-5">
+
+    <!-- 1. Streamlined Bankroll, Active Wager, Streak, Chip Selector, Quick Wager Modifiers & Side Bets -->
+    <section class="w-full bg-black/35 border border-amber-400/30 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-md">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Bankroll</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-amber-400">$<span id="bankroll-amount">500</span></div>
+          </div>
+          <div class="h-9 w-px bg-white/15"></div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Active Wager</div>
+            <div class="text-xl sm:text-2xl font-bold text-white">$<span id="bet-amount">25</span></div>
+          </div>
+          <div class="h-9 w-px bg-white/15"></div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Win Streak</div>
+            <div class="text-base sm:text-lg font-bold text-amber-300"><span id="streak-count">0</span> <span class="text-xs text-emerald-400 font-normal">(Best: <span id="best-streak">0</span>)</span></div>
+          </div>
+        </div>
+
+        <!-- Chip Selector & Step 14 Quick Wager Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs text-emerald-300 mr-0.5 font-medium">Bet Chip:</span>
+          <button type="button" data-bet="10" class="chip-btn w-11 h-11 rounded-full font-extrabold text-xs border-2 border-dashed border-white bg-sky-600 hover:bg-sky-500 text-white shadow transition active:scale-95">$10</button>
+          <button type="button" data-bet="25" class="chip-btn w-11 h-11 rounded-full font-extrabold text-xs border-2 border-dashed border-white bg-emerald-600 hover:bg-emerald-500 text-white shadow transition active:scale-95 ring-2 ring-amber-400">$25</button>
+          <button type="button" data-bet="50" class="chip-btn w-11 h-11 rounded-full font-extrabold text-xs border-2 border-dashed border-white bg-amber-600 hover:bg-amber-500 text-white shadow transition active:scale-95">$50</button>
+          <button type="button" data-bet="100" class="chip-btn w-12 h-11 rounded-full font-extrabold text-xs border-2 border-dashed border-white bg-rose-600 hover:bg-rose-500 text-white shadow transition active:scale-95">$100</button>
+
+          <!-- Step 14: Quick Wager Adjusters (½x, 2x, Max) -->
+          <span class="h-6 w-px bg-white/15 mx-0.5"></span>
+          <button id="btn-wager-half" type="button"
+            class="px-2.5 py-1.5 rounded-lg font-bold text-xs bg-white/10 hover:bg-white/20 text-emerald-200 border border-white/20 shadow transition active:scale-95">
+            ½x
+          </button>
+          <button id="btn-wager-double" type="button"
+            class="px-2.5 py-1.5 rounded-lg font-bold text-xs bg-white/10 hover:bg-white/20 text-amber-200 border border-white/20 shadow transition active:scale-95">
+            2x
+          </button>
+          <button id="btn-wager-max" type="button"
+            class="px-2.5 py-1.5 rounded-lg font-bold text-xs bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/50 shadow transition active:scale-95">
+            Max
+          </button>
+
+          <button id="btn-reset-bank" type="button" class="hidden text-xs bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3.5 py-2 rounded-xl shadow transition">
+            Reload $500
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 12 & 13: Optional Casino Side Bets (Perfect Pairs & 21+3 Poker) -->
+      <div class="w-full pt-3 border-t border-white/10 flex flex-col gap-2 text-xs">
+        <!-- Perfect Pairs Row -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button id="btn-perfect-pairs" type="button"
+              class="font-bold px-3 py-1 rounded-full border transition bg-white/10 hover:bg-white/20 text-white/80 border-white/20">
+              ✨ Perfect Pairs ($5 Side Bet): OFF
+            </button>
+            <span class="text-[11px] text-white/60">6:1 Mixed • 12:1 Colored • 25:1 Suited Pair</span>
+          </div>
+          <span id="pp-result-pill" class="text-[11px] text-amber-300 font-semibold">Toggle ON to play for pair bonuses</span>
+        </div>
+
+        <!-- Step 13: 21+3 Poker Side Bet Row -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button id="btn-21plus3" type="button"
+              class="font-bold px-3 py-1 rounded-full border transition bg-white/10 hover:bg-white/20 text-white/80 border-white/20">
+              🃏 21+3 Poker ($5 Side Bet): OFF
+            </button>
+            <span class="text-[11px] text-white/60">5:1 Flush • 10:1 Straight • 30:1 Trips • 40:1 Str. Flush • 100:1 Suited Trips</span>
+          </div>
+          <span id="plus3-result-pill" class="text-[11px] text-teal-300 font-semibold">Combines your 2 cards + Dealer's up-card</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Status & Strategy Coaching Area -->
+    <div class="w-full flex flex-col gap-3">
+      <!-- Status Banner -->
+      <div id="status-banner" class="w-full text-center py-3.5 px-5 rounded-2xl bg-black/35 border border-white/15 shadow-inner transition-all">
+        <p id="status-text" class="text-base sm:text-xl font-semibold text-emerald-100">
+          Place your bet and play against the Dealer!
+        </p>
+        <p id="sub-status-text" class="text-xs sm:text-sm text-emerald-300/80 mt-1">
+          Hotkeys: [H] Hit, [S] Stand, [D] Double, [P] Split Pair, [U] Surrender, [Space] Deal.
+        </p>
+      </div>
+
+      <!-- Insurance Prompt Banner (Appears when Dealer shows an Ace) -->
+      <div id="insurance-banner" class="hidden w-full py-3 px-4 rounded-2xl bg-indigo-950/90 border border-indigo-400/60 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-2.5">
+          <span class="bg-indigo-400 text-indigo-950 font-extrabold px-2.5 py-0.5 rounded text-xs uppercase">Insurance 2:1</span>
+          <span id="insurance-prompt-text" class="text-xs sm:text-sm text-indigo-100 font-medium">
+            Dealer shows an Ace! Protect your hand for $<span id="insurance-cost">12</span>?
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-buy-insurance" type="button"
+            class="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold text-xs px-3.5 py-1.5 rounded-lg shadow transition active:scale-95">
+            Buy Insurance [I]
+          </button>
+          <button id="btn-skip-insurance" type="button"
+            class="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg border border-white/20 transition active:scale-95">
+            No Thanks [N]
+          </button>
+        </div>
+      </div>
+
+      <!-- Strategy Coach Advice Banner -->
+      <div id="coach-banner" class="w-full py-2.5 px-4 rounded-xl bg-amber-500/15 border border-amber-400/40 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+        <div class="flex items-center gap-2.5">
+          <span class="bg-amber-400 text-emerald-950 font-extrabold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide">Strategy Coach</span>
+          <span id="coach-text" class="text-amber-100 font-medium">Deal a hand to see the mathematically best play.</span>
+        </div>
+        <span id="hand-type-badge" class="text-[11px] text-amber-300/90 font-semibold whitespace-nowrap">Ready</span>
+      </div>
+    </div>
+
+    <!-- 3. Main Playing Table: Dealer & Player Hands with Extra Breathing Room -->
+    <div class="w-full flex flex-col gap-4">
+      <!-- Dealer Hand Section -->
+      <section class="w-full bg-black/25 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg">
+        <div class="w-full flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-emerald-300">Dealer's Hand</span>
+            <span id="dealer-rule-badge" class="text-[11px] bg-white/10 text-emerald-200 px-2.5 py-0.5 rounded-md">Stands Soft 17</span>
+          </div>
+          <div class="flex items-center gap-2 bg-black/45 border border-white/20 px-4 py-1 rounded-full">
+            <span class="text-xs text-emerald-300">Total:</span>
+            <span id="dealer-score" class="text-lg font-extrabold text-amber-400">0</span>
+          </div>
+        </div>
+
+        <!-- Dealer Cards Container -->
+        <div id="dealer-cards" class="min-h-[136px] flex flex-wrap items-center justify-center gap-4 py-2">
+          <div class="w-24 h-32 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center text-white/50 text-xs text-center px-2">
+            Dealer cards
+          </div>
+        </div>
+      </section>
+
+      <!-- Player Hands Grid (Expands to 2 columns when Splitting Pairs!) -->
+      <div id="player-hands-grid" class="w-full grid grid-cols-1 gap-4">
+        <!-- Primary Player Hand (Hand 1) -->
+        <section id="hand-1-box" class="w-full bg-black/20 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all">
+          <div class="w-full flex items-center justify-between mb-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <span id="hand-1-label" class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-emerald-300">Your Hand</span>
+              <span id="charlie-badge" class="text-[11px] bg-amber-400/20 border border-amber-400/40 text-amber-200 px-2.5 py-0.5 rounded-md">
+                5-Card Charlie: <strong id="charlie-progress">0/5</strong> (Pays 2x)
+              </span>
+            </div>
+            <div class="flex items-center gap-2 bg-black/45 border border-white/20 px-4 py-1 rounded-full">
+              <span class="text-xs text-emerald-300">Total:</span>
+              <span id="player-score" class="text-lg font-extrabold text-amber-400">0</span>
+            </div>
+          </div>
+
+          <!-- Player Cards Container -->
+          <div id="player-cards" class="min-h-[136px] flex flex-wrap items-center justify-center gap-4 py-2">
+            <div class="w-24 h-32 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center text-white/50 text-xs text-center px-2">
+              Cards will appear here
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 10: Split Hand 2 Box (Hidden unless player splits a pair) -->
+        <section id="split-hand-box" class="hidden w-full bg-black/20 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all">
+          <div class="w-full flex items-center justify-between mb-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="hand-2-label" class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-teal-300">Split Hand 2</span>
+              <span id="split-status-badge" class="text-[11px] bg-teal-400/20 border border-teal-400/40 text-teal-200 px-2.5 py-0.5 rounded-md">
+                Waiting
+              </span>
+            </div>
+            <div class="flex items-center gap-2 bg-black/45 border border-white/20 px-4 py-1 rounded-full">
+              <span class="text-xs text-emerald-300">Total:</span>
+              <span id="split-score" class="text-lg font-extrabold text-amber-400">0</span>
+            </div>
+          </div>
+
+          <!-- Split Cards Container -->
+          <div id="split-cards" class="min-h-[136px] flex flex-wrap items-center justify-center gap-4 py-2">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 4. Action Controls -->
+    <div class="w-full flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 py-1">
+      <button id="btn-hit" disabled
+        class="flex-1 min-w-[105px] max-w-[145px] bg-amber-400 hover:bg-amber-300 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-emerald-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        Hit (+1 Card)
+      </button>
+
+      <button id="btn-stand" disabled
+        class="flex-1 min-w-[105px] max-w-[145px] bg-sky-400 hover:bg-sky-300 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-slate-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        Stand (Hold)
+      </button>
+
+      <button id="btn-double" disabled
+        class="flex-1 min-w-[120px] max-w-[160px] bg-purple-400 hover:bg-purple-300 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-purple-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        Double Down (2x)
+      </button>
+
+      <button id="btn-split" disabled
+        class="flex-1 min-w-[115px] max-w-[155px] bg-teal-400 hover:bg-teal-300 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-teal-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        Split Pair [P]
+      </button>
+
+      <button id="btn-surrender" disabled
+        class="flex-1 min-w-[115px] max-w-[155px] bg-rose-400 hover:bg-rose-300 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-rose-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        Surrender (-50%)
+      </button>
+
+      <button id="btn-deal"
+        class="flex-1 min-w-[115px] max-w-[155px] bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/35 disabled:cursor-not-allowed text-emerald-950 font-bold py-3 px-3 rounded-xl shadow-md transition active:scale-95 text-sm">
+        New Hand
+      </button>
+    </div>
+
+    <!-- 5. Expandable Recent Hands History Log -->
+    <section class="w-full bg-black/35 border border-white/15 rounded-2xl p-4 sm:p-5 shadow-md">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-emerald-300">Recent Hands History</span>
+          <span class="text-[11px] text-emerald-300/80">(Tap any hand to show/hide cards)</span>
+        </div>
+        <button id="btn-clear-history" type="button"
+          class="text-[11px] font-semibold text-emerald-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1 rounded-full transition">
+          Clear Log
+        </button>
+      </div>
+      <div id="history-list" class="space-y-2 text-xs">
+        <div class="text-white/50 italic py-2 text-center">Finish a hand to record your result here.</div>
+      </div>
+    </section>
+
+    <!-- 6. Collapsible Session Analytics & Bankroll Trend Drawer (Includes Copy Summary & Reset Career Records) -->
+    <section class="w-full bg-black/35 border border-white/15 rounded-2xl overflow-hidden shadow-md">
+      <button id="btn-toggle-analytics" type="button"
+        class="w-full flex flex-wrap items-center justify-between gap-2 px-4 py-3.5 text-left hover:bg-white/5 transition">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="bg-sky-400/20 text-sky-200 border border-sky-400/40 font-bold px-2.5 py-0.5 rounded-md text-xs uppercase tracking-wider">
+            📈 Session Analytics &amp; Bankroll Trend
+          </span>
+          <span id="analytics-summary-pill" class="text-xs text-emerald-200/90 font-medium">
+            Win Rate: <strong id="win-rate-mini" class="text-white">0%</strong> • Net: <strong id="net-profit-mini" class="text-emerald-300">$0</strong>
+          </span>
+        </div>
+        <span id="analytics-chevron" class="text-xs text-emerald-300 font-semibold bg-black/30 px-2.5 py-1 rounded-lg border border-white/10">
+          ▼ Show Analytics
+        </span>
+      </button>
+
+      <!-- Collapsible Body (Hidden by default) -->
+      <div id="analytics-drawer" class="hidden border-t border-white/10 px-4 py-4 bg-black/25 space-y-4">
+        <!-- 4 Key Metric Cards: Best Bankroll, Win Rate, Net Session Profit, Shoe Capacity -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Best Bankroll</div>
+            <div class="text-lg font-extrabold text-emerald-300 mt-0.5">$<span id="high-bankroll">500</span></div>
+          </div>
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-sky-300 font-semibold">Win Rate</div>
+            <div id="win-rate" class="text-lg font-extrabold text-white mt-0.5">0%</div>
+          </div>
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">Net Session Profit</div>
+            <div id="net-profit" class="text-lg font-extrabold text-emerald-300 mt-0.5">$0</div>
+          </div>
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-purple-300 font-semibold">Shoe Capacity</div>
+            <div id="shoe-capacity" class="text-sm font-extrabold text-white mt-1">52 Cards</div>
+          </div>
+        </div>
+
+        <!-- Bankroll Trend Sparkline Chart -->
+        <div class="bg-black/35 border border-white/10 rounded-xl p-3.5 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span class="font-semibold text-emerald-200 uppercase tracking-wide text-[11px]">Bankroll Trend (Last 15 Hands)</span>
+            <span id="sparkline-range-label" class="text-[11px] text-white/60 font-mono">Range: $500 – $500</span>
+          </div>
+          <div class="w-full h-24 bg-black/40 rounded-lg border border-white/5 p-2 flex items-center justify-center">
+            <svg id="sparkline-svg" viewBox="0 0 320 72" class="w-full h-full overflow-visible"></svg>
+          </div>
+        </div>
+
+        <!-- Insurance Status Note -->
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs bg-black/30 border border-white/10 rounded-xl px-3.5 py-2.5">
+          <span class="text-white/70 font-medium">Insurance Side-Bet Status:</span>
+          <span id="insurance-status-pill" class="text-[11px] text-amber-300/90 font-medium">Insurance 2:1 triggers when Dealer shows an Ace</span>
+        </div>
+
+        <!-- Step 12: Copy Career Summary & Reset Career Records -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/10 text-xs">
+          <span id="stats-action-feedback" class="text-[11px] text-emerald-300 font-medium">Export your stats or reset saved records anytime.</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btn-copy-stats" type="button"
+              class="bg-sky-500/25 hover:bg-sky-500/35 text-sky-200 border border-sky-400/40 font-semibold px-3 py-1.5 rounded-lg transition active:scale-95">
+              📋 Copy Stats Summary
+            </button>
+            <button id="btn-reset-career" type="button"
+              class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/40 font-semibold px-3 py-1.5 rounded-lg transition active:scale-95">
+              🔄 Reset Career Records
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Step 12: Unified Collapsible Settings Drawer (Renamed from House Rules Customizer, housing all top settings + rules) -->
+    <section class="w-full bg-black/35 border border-white/15 rounded-2xl overflow-hidden shadow-md">
+      <button id="btn-toggle-rules" type="button"
+        class="w-full flex flex-wrap items-center justify-between gap-2 px-4 py-3.5 text-left hover:bg-white/5 transition">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="bg-purple-400/20 text-purple-200 border border-purple-400/40 font-bold px-2.5 py-0.5 rounded-md text-xs uppercase tracking-wider">
+            ⚙️ Settings
+          </span>
+          <span id="rules-summary-pill" class="text-xs text-emerald-200/90 font-medium">
+            Stands Soft 17 (S17) • Blackjack Pays 3:2
+          </span>
+        </div>
+        <span id="rules-chevron" class="text-xs text-emerald-300 font-semibold bg-black/30 px-2.5 py-1 rounded-lg border border-white/10">
+          ▼ Show Settings
+        </span>
+      </button>
+
+      <!-- Collapsible Body (Hidden by default) -->
+      <div id="rules-drawer" class="hidden border-t border-white/10 px-4 py-4 bg-black/25 space-y-4 text-xs">
+        <!-- Table & Assist Preferences (Moved from Top Header) -->
+        <div>
+          <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-2">Table Appearance, Shoe &amp; Assists</div>
+          <div class="flex flex-wrap items-center gap-2.5 bg-black/35 border border-white/10 rounded-xl p-3">
+            <button id="btn-shoe" type="button"
+              class="text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/25 px-3 py-1.5 rounded-full transition">
+              📦 Shoe: 1-Deck
+            </button>
+            <button id="btn-theme" type="button"
+              class="text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/25 px-3 py-1.5 rounded-full transition">
+              🎨 Felt: Emerald
+            </button>
+            <button id="btn-card-theme" type="button"
+              class="text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/25 px-3 py-1.5 rounded-full transition">
+              🃏 Cards: Classic
+            </button>
+            <button id="btn-coach" type="button"
+              class="text-xs font-semibold bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/50 px-3 py-1.5 rounded-full transition">
+              💡 Coach: ON
+            </button>
+            <button id="btn-mute" type="button"
+              class="text-xs font-semibold bg-black/30 hover:bg-black/45 border border-white/20 px-3 py-1.5 rounded-full transition">
+              🔊 Sound: ON
+            </button>
+          </div>
+        </div>
+
+        <!-- House Rules Toggles -->
+        <div>
+          <div class="text-[11px] uppercase tracking-wider text-purple-300 font-semibold mb-2">Casino House Rules</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-black/35 border border-white/10 rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div>
+                <div class="font-bold text-white text-xs">Dealer Soft 17 Rule</div>
+                <div class="text-[11px] text-white/60 mt-0.5">Does Dealer hit or stand on Ace + 6?</div>
+              </div>
+              <button id="btn-rule-s17" type="button"
+                class="bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/50 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition">
+                Stands (S17)
+              </button>
+            </div>
+
+            <div class="bg-black/35 border border-white/10 rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div>
+                <div class="font-bold text-white text-xs">Natural Blackjack Payout</div>
+                <div class="text-[11px] text-white/60 mt-0.5">Bonus multiplier for 21 on the deal</div>
+              </div>
+              <button id="btn-rule-payout" type="button"
+                class="bg-amber-400/25 hover:bg-amber-400/35 text-amber-200 border border-amber-400/50 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition">
+                Pays 3:2 (1.5x)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Step 9: Collapsible Hi-Lo Card Counting Trainer (Collapsed by Default) -->
+    <section class="w-full bg-black/35 border border-white/15 rounded-2xl overflow-hidden shadow-md">
+      <button id="btn-toggle-counter" type="button"
+        class="w-full flex flex-wrap items-center justify-between gap-2 px-4 py-3.5 text-left hover:bg-white/5 transition">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="bg-teal-400/20 text-teal-200 border border-teal-400/40 font-bold px-2.5 py-0.5 rounded-md text-xs uppercase tracking-wider">
+            🧮 Hi-Lo Card Counter
+          </span>
+          <span id="counter-summary-pill" class="text-xs text-emerald-200/90 font-medium">
+            Running: <strong id="running-count-mini" class="text-white">0</strong> • True: <strong id="true-count-mini" class="text-amber-300">0.0</strong>
+          </span>
+        </div>
+        <span id="counter-chevron" class="text-xs text-emerald-300 font-semibold bg-black/30 px-2.5 py-1 rounded-lg border border-white/10">
+          ▼ Show Trainer
+        </span>
+      </button>
+
+      <!-- Collapsible Body (Hidden by default) -->
+      <div id="counter-drawer" class="hidden border-t border-white/10 px-4 py-4 bg-black/25 space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Running Count</div>
+            <div id="running-count-val" class="text-2xl font-extrabold text-white mt-0.5">0</div>
+            <div class="text-[11px] text-white/60 mt-0.5">Sum of visible dealt cards</div>
+          </div>
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">True Count</div>
+            <div id="true-count-val" class="text-2xl font-extrabold text-amber-400 mt-0.5">0.0</div>
+            <div class="text-[11px] text-white/60 mt-0.5">Running ÷ Remaining Decks</div>
+          </div>
+          <div class="bg-black/35 border border-white/10 rounded-xl p-3">
+            <div class="text-[11px] uppercase tracking-wider text-sky-300 font-semibold">Shoe Heat &amp; Edge</div>
+            <div id="shoe-heat-badge" class="text-sm font-extrabold text-emerald-200 mt-1.5">Neutral Shoe</div>
+            <div id="shoe-heat-advice" class="text-[11px] text-white/60 mt-0.5">Standard minimum wager</div>
+          </div>
+        </div>
+
+        <!-- Shoe Penetration Bar & Hi-Lo Key -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-emerald-200/90 font-medium">Shoe Penetration (Cards Dealt): <strong id="penetration-pct" class="text-white">0%</strong></span>
+            <span class="text-white/60 text-[11px]">Low (2–6) = <strong class="text-emerald-300">+1</strong> • Neutral (7–9) = <strong class="text-white">0</strong> • High (10–A) = <strong class="text-rose-300">-1</strong></span>
+          </div>
+          <div class="w-full h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
+            <div id="penetration-bar" class="h-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Collapsible Achievement Trophies Drawer (Collapsed by default to keep layout clean) -->
+    <section class="w-full bg-black/35 border border-white/15 rounded-2xl overflow-hidden shadow-md">
+      <button id="btn-toggle-achievements" type="button"
+        class="w-full flex flex-wrap items-center justify-between gap-2 px-4 py-3.5 text-left hover:bg-white/5 transition">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-amber-300">🏆 Achievement Trophies</span>
+          <span class="text-[11px] bg-amber-400/20 text-amber-200 border border-amber-400/40 px-2.5 py-0.5 rounded-full font-semibold">
+            Unlocked: <strong id="achievements-count">0/6</strong>
+          </span>
+          <span id="achievement-toast" class="text-[11px] text-emerald-300 font-semibold">Complete milestones to unlock badges!</span>
+        </div>
+        <span id="achievements-chevron" class="text-xs text-emerald-300 font-semibold bg-black/30 px-2.5 py-1 rounded-lg border border-white/10">
+          ▼ Show Trophies
+        </span>
+      </button>
+      <div id="achievements-drawer" class="hidden border-t border-white/10 px-4 py-4 bg-black/25">
+        <div id="achievements-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+          <!-- Rendered dynamically by renderAchievements() -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Beginner How-It-Works Card -->
+    <div class="w-full bg-black/35 border border-white/15 rounded-2xl p-4 text-xs sm:text-sm text-emerald-100/90 space-y-1.5">
+      <div class="font-semibold text-amber-300">What's New in Step 14:</div>
+      <p>• <strong>Quick Wager Buttons (`#btn-wager-half`, `#btn-wager-double`, `#btn-wager-max`):</strong> Lets you instantly halve (`½x`), double (`2x`), or go all-in (`Max`) on your active wager between hands without being limited to fixed chip presets.</p>
+      <p>• <strong>Smart Wager Clamping (`adjustQuickWager`):</strong> Automatically keeps custom wagers between the `$10` table minimum and your available bankroll, and locks the modifier buttons while a hand is in play.</p>
+    </div>
+
+  </main>
+
+  <footer class="w-full max-w-3xl text-center text-xs text-white/60 pt-2">
+    Step 14 Complete • Hotkeys: [H] Hit, [S] Stand, [D] Double, [P] Split, [U] Surrender, [I] Insurance, [Space] New Hand
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. DATA & STATE (Variables that track the game)
+    // ==========================================
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+    let deck = [];
+    let playerHand = [];
+    let dealerHand = [];
+    let isGameOver = true;
+    let handsPlayed = 0;
+    let wins = 0;
+    let losses = 0;
+    let pushes = 0;
+
+    // Step 3 State: Bankroll, Betting, and Sound
+    let bankroll = 500;
+    let selectedBet = 25;
+    let activeBet = 25;
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    // Step 4 State: Saved Records, Streaks, and Strategy Coach
+    let highBankroll = 500;
+    let currentStreak = 0;
+    let bestStreak = 0;
+    let coachEnabled = true;
+
+    // Step 5 & 6 State: Recent Hands History Log & Felt Themes
+    let handHistory = [];
+    const themes = [
+      { id: 'emerald', label: '🎨 Felt: Emerald', className: 'theme-emerald' },
+      { id: 'midnight', label: '🎨 Felt: Midnight', className: 'theme-midnight' },
+      { id: 'crimson', label: '🎨 Felt: Crimson', className: 'theme-crimson' }
+    ];
+    let currentThemeIndex = 0;
+
+    // Step 7 State: Card Deck Themes, Insurance Side Bet & Session Profit
+    const cardThemes = [
+      {
+        id: 'classic',
+        label: '🃏 Cards: Classic',
+        faceBg: 'bg-white border-slate-200',
+        redColor: 'text-rose-600',
+        blackColor: 'text-slate-900',
+        backClass: 'card-back-classic',
+        badgeClass: 'bg-blue-950/90 text-amber-300 border-amber-400/40'
+      },
+      {
+        id: 'obsidian',
+        label: '🃏 Cards: Obsidian',
+        faceBg: 'bg-slate-900 border-amber-400/60 shadow-amber-500/10',
+        redColor: 'text-rose-400',
+        blackColor: 'text-amber-300',
+        backClass: 'card-back-obsidian',
+        badgeClass: 'bg-slate-950 text-amber-300 border-amber-400/60'
+      },
+      {
+        id: 'vintage',
+        label: '🃏 Cards: Vintage',
+        faceBg: 'bg-amber-50 border-amber-500',
+        redColor: 'text-red-800',
+        blackColor: 'text-stone-900',
+        backClass: 'card-back-vintage',
+        badgeClass: 'bg-amber-950 text-amber-200 border-amber-300/50'
+      }
+    ];
+    let currentCardThemeIndex = 0;
+    let insuranceOffered = false;
+    let sessionReloads = 0;
+
+    // Step 8 State: Multi-Deck Casino Shoe & Achievement Badges
+    const shoeSizes = [1, 2, 6];
+    let currentShoeIndex = 0;
+    let doubledThisHand = false;
+
+    const achievementDefs = [
+      { id: 'first_bj', icon: '🎯', title: 'Natural 21', desc: 'Hit Blackjack on the deal' },
+      { id: 'double_win', icon: '⚡', title: 'Double Trouble', desc: 'Win a Double Down hand' },
+      { id: 'charlie_win', icon: '🌟', title: 'Charlie Master', desc: 'Win with a 5-Card Charlie' },
+      { id: 'streak_3', icon: '🔥', title: 'Hot Streak', desc: 'Win 3 hands in a row' },
+      { id: 'insured_save', icon: '🛡️', title: 'Insured Save', desc: 'Save a hand with Insurance' },
+      { id: 'high_roller', icon: '💎', title: 'High Roller', desc: 'Reach a $1,000+ Bankroll' }
+    ];
+    let unlockedAchievements = {};
+
+    // Step 9 State: Hi-Lo Card Counting Trainer & Collapsible Drawers
+    let runningCount = 0;
+    let dealerHoleCounted = false;
+    let counterExpanded = false;
+    let achievementsExpanded = false;
+
+    // Step 10 State: Pair Splitting
+    let isSplitMode = false;
+    let splitHandB = [];
+    let activeSplitIndex = 0; // 0 = playing Hand 1, 1 = playing Split Hand 2
+    let hand1Bet = 25;
+    let hand2Bet = 25;
+
+    // Step 11, 12 & 13 State: Analytics Drawer, Sparkline, Settings Drawer, Perfect Pairs & 21+3 Poker Side Bet
+    let analyticsExpanded = false;
+    let rulesExpanded = false;
+    let bankrollHistory = [500];
+    let dealerHitsSoft17 = false; // false = Stands on all 17s (S17), true = Hits Soft 17 (H17)
+    let blackjackPayoutMultiplier = 1.5; // 1.5 = 3:2 payout, 2.0 = 2:1 bonus payout
+    let perfectPairsEnabled = false;
+    let twentyOnePlus3Enabled = false;
+
+    // Grab HTML elements so JavaScript can update them
+    const appBodyEl = document.getElementById('app-body');
+    const dealerCardsEl = document.getElementById('dealer-cards');
+    const dealerScoreEl = document.getElementById('dealer-score');
+    const dealerRuleBadgeEl = document.getElementById('dealer-rule-badge');
+    const playerHandsGridEl = document.getElementById('player-hands-grid');
+    const hand1BoxEl = document.getElementById('hand-1-box');
+    const hand1LabelEl = document.getElementById('hand-1-label');
+    const playerCardsEl = document.getElementById('player-cards');
+    const playerScoreEl = document.getElementById('player-score');
+    const splitHandBoxEl = document.getElementById('split-hand-box');
+    const hand2LabelEl = document.getElementById('hand-2-label');
+    const splitStatusBadgeEl = document.getElementById('split-status-badge');
+    const splitCardsEl = document.getElementById('split-cards');
+    const splitScoreEl = document.getElementById('split-score');
+    const statusTextEl = document.getElementById('status-text');
+    const subStatusTextEl = document.getElementById('sub-status-text');
+    const deckCountEl = document.getElementById('deck-count');
+    const handsPlayedEl = document.getElementById('hands-played');
+    const winsCountEl = document.getElementById('wins-count');
+    const lossesCountEl = document.getElementById('losses-count');
+    const pushesCountEl = document.getElementById('pushes-count');
+    const bankrollAmountEl = document.getElementById('bankroll-amount');
+    const betAmountEl = document.getElementById('bet-amount');
+    const highBankrollEl = document.getElementById('high-bankroll');
+    const streakCountEl = document.getElementById('streak-count');
+    const bestStreakEl = document.getElementById('best-streak');
+    const winRateEl = document.getElementById('win-rate');
+    const winRateMiniEl = document.getElementById('win-rate-mini');
+    const netProfitEl = document.getElementById('net-profit');
+    const netProfitMiniEl = document.getElementById('net-profit-mini');
+    const shoeCapacityEl = document.getElementById('shoe-capacity');
+    const insuranceStatusPillEl = document.getElementById('insurance-status-pill');
+    const sparklineSvgEl = document.getElementById('sparkline-svg');
+    const sparklineRangeLabelEl = document.getElementById('sparkline-range-label');
+    const statsActionFeedbackEl = document.getElementById('stats-action-feedback');
+    const btnCopyStats = document.getElementById('btn-copy-stats');
+    const btnResetCareer = document.getElementById('btn-reset-career');
+    const btnPerfectPairs = document.getElementById('btn-perfect-pairs');
+    const ppResultPillEl = document.getElementById('pp-result-pill');
+    const btn21Plus3 = document.getElementById('btn-21plus3');
+    const plus3ResultPillEl = document.getElementById('plus3-result-pill');
+    const btnWagerHalf = document.getElementById('btn-wager-half');
+    const btnWagerDouble = document.getElementById('btn-wager-double');
+    const btnWagerMax = document.getElementById('btn-wager-max');
+    const btnToggleAnalytics = document.getElementById('btn-toggle-analytics');
+    const analyticsDrawerEl = document.getElementById('analytics-drawer');
+    const analyticsChevronEl = document.getElementById('analytics-chevron');
+    const btnToggleRules = document.getElementById('btn-toggle-rules');
+    const rulesDrawerEl = document.getElementById('rules-drawer');
+    const rulesChevronEl = document.getElementById('rules-chevron');
+    const rulesSummaryPillEl = document.getElementById('rules-summary-pill');
+    const btnRuleS17 = document.getElementById('btn-rule-s17');
+    const btnRulePayout = document.getElementById('btn-rule-payout');
+    const insuranceBannerEl = document.getElementById('insurance-banner');
+    const insuranceCostEl = document.getElementById('insurance-cost');
+    const btnBuyInsurance = document.getElementById('btn-buy-insurance');
+    const btnSkipInsurance = document.getElementById('btn-skip-insurance');
+    const coachBannerEl = document.getElementById('coach-banner');
+    const coachTextEl = document.getElementById('coach-text');
+    const handTypeBadgeEl = document.getElementById('hand-type-badge');
+    const charlieProgressEl = document.getElementById('charlie-progress');
+    const achievementsListEl = document.getElementById('achievements-list');
+    const achievementsCountEl = document.getElementById('achievements-count');
+    const achievementToastEl = document.getElementById('achievement-toast');
+    const btnToggleAchievements = document.getElementById('btn-toggle-achievements');
+    const achievementsDrawerEl = document.getElementById('achievements-drawer');
+    const achievementsChevronEl = document.getElementById('achievements-chevron');
+    const btnToggleCounter = document.getElementById('btn-toggle-counter');
+    const counterDrawerEl = document.getElementById('counter-drawer');
+    const counterChevronEl = document.getElementById('counter-chevron');
+    const runningCountMiniEl = document.getElementById('running-count-mini');
+    const trueCountMiniEl = document.getElementById('true-count-mini');
+    const runningCountValEl = document.getElementById('running-count-val');
+    const trueCountValEl = document.getElementById('true-count-val');
+    const shoeHeatBadgeEl = document.getElementById('shoe-heat-badge');
+    const shoeHeatAdviceEl = document.getElementById('shoe-heat-advice');
+    const penetrationPctEl = document.getElementById('penetration-pct');
+    const penetrationBarEl = document.getElementById('penetration-bar');
+    const historyListEl = document.getElementById('history-list');
+    const btnHit = document.getElementById('btn-hit');
+    const btnStand = document.getElementById('btn-stand');
+    const btnDouble = document.getElementById('btn-double');
+    const btnSplit = document.getElementById('btn-split');
+    const btnSurrender = document.getElementById('btn-surrender');
+    const btnDeal = document.getElementById('btn-deal');
+    const btnMute = document.getElementById('btn-mute');
+    const btnCoach = document.getElementById('btn-coach');
+    const btnTheme = document.getElementById('btn-theme');
+    const btnCardTheme = document.getElementById('btn-card-theme');
+    const btnShoe = document.getElementById('btn-shoe');
+    const btnResetBank = document.getElementById('btn-reset-bank');
+    const btnClearHistory = document.getElementById('btn-clear-history');
+    const chipButtons = document.querySelectorAll('.chip-btn');
+
+    // ==========================================
+    // 2. SAVED RECORDS, THEMES, RULES & ACHIEVEMENTS
+    // ==========================================
+    function applyTheme() {
+      const theme = themes[currentThemeIndex];
+      themes.forEach((t) => appBodyEl.classList.remove(t.className));
+      appBodyEl.classList.add(theme.className);
+      btnTheme.textContent = theme.label;
+    }
+
+    function applyCardThemeButton() {
+      const cTheme = cardThemes[currentCardThemeIndex];
+      btnCardTheme.textContent = cTheme.label;
+    }
+
+    function applyShoeButton() {
+      const numDecks = shoeSizes[currentShoeIndex];
+      btnShoe.textContent = `📦 Shoe: ${numDecks}-Deck`;
+      shoeCapacityEl.textContent = `${numDecks * 52} Cards (${numDecks}D)`;
+    }
+
+    function applyHouseRulesUI() {
+      const numDecks = shoeSizes[currentShoeIndex];
+      const feltName = themes[currentThemeIndex].id.charAt(0).toUpperCase() + themes[currentThemeIndex].id.slice(1);
+      const s17Text = dealerHitsSoft17 ? 'H17' : 'S17';
+      const payoutText = blackjackPayoutMultiplier === 2 ? '2:1' : '3:2';
+      rulesSummaryPillEl.textContent = `${numDecks}D Shoe • ${feltName} • ${s17Text} • Pays ${payoutText}`;
+      dealerRuleBadgeEl.textContent = dealerHitsSoft17 ? 'Hits Soft 17' : 'Stands Soft 17';
+      btnRuleS17.textContent = dealerHitsSoft17 ? 'Hits (H17)' : 'Stands (S17)';
+      btnRulePayout.textContent = blackjackPayoutMultiplier === 2 ? 'Pays 2:1 (2.0x)' : 'Pays 3:2 (1.5x)';
+    }
+
+    function applyPerfectPairsUI() {
+      if (perfectPairsEnabled) {
+        btnPerfectPairs.textContent = '✨ Perfect Pairs ($5 Side Bet): ON';
+        btnPerfectPairs.className = 'font-bold px-3 py-1 rounded-full border transition bg-amber-400/25 hover:bg-amber-400/35 text-amber-200 border-amber-400/60';
+      } else {
+        btnPerfectPairs.textContent = '✨ Perfect Pairs ($5 Side Bet): OFF';
+        btnPerfectPairs.className = 'font-bold px-3 py-1 rounded-full border transition bg-white/10 hover:bg-white/20 text-white/80 border-white/20';
+      }
+
+      if (twentyOnePlus3Enabled) {
+        btn21Plus3.textContent = '🃏 21+3 Poker ($5 Side Bet): ON';
+        btn21Plus3.className = 'font-bold px-3 py-1 rounded-full border transition bg-teal-400/25 hover:bg-teal-400/35 text-teal-200 border-teal-400/60';
+      } else {
+        btn21Plus3.textContent = '🃏 21+3 Poker ($5 Side Bet): OFF';
+        btn21Plus3.className = 'font-bold px-3 py-1 rounded-full border transition bg-white/10 hover:bg-white/20 text-white/80 border-white/20';
+      }
+    }
+
+    function pushBankrollSnapshot() {
+      bankrollHistory.push(bankroll);
+      if (bankrollHistory.length > 15) {
+        bankrollHistory.shift();
+      }
+    }
+
+    function unlockAchievement(id) {
+      if (unlockedAchievements[id]) return;
+      unlockedAchievements[id] = true;
+      const found = achievementDefs.find((a) => a.id === id);
+      if (found) {
+        achievementToastEl.textContent = `🏆 Unlocked: ${found.icon} ${found.title}!`;
+      }
+      updateSavedStats();
+    }
+
+    function loadSavedStats() {
+      try {
+        const savedHigh = localStorage.getItem('bj21_highBankroll');
+        const savedBestStreak = localStorage.getItem('bj21_bestStreak');
+        const savedThemeIdx = localStorage.getItem('bj21_themeIdx');
+        const savedCardThemeIdx = localStorage.getItem('bj21_cardThemeIdx');
+        const savedShoeIdx = localStorage.getItem('bj21_shoeIdx');
+        const savedAch = localStorage.getItem('bj21_achievements');
+        const savedH17 = localStorage.getItem('bj21_dealerH17');
+        const savedPayout = localStorage.getItem('bj21_bjPayout');
+        if (savedHigh !== null) highBankroll = Math.max(500, Number(savedHigh) || 500);
+        if (savedBestStreak !== null) bestStreak = Math.max(0, Number(savedBestStreak) || 0);
+        if (savedThemeIdx !== null) {
+          const idx = Number(savedThemeIdx);
+          if (idx >= 0 && idx < themes.length) currentThemeIndex = idx;
+        }
+        if (savedCardThemeIdx !== null) {
+          const cIdx = Number(savedCardThemeIdx);
+          if (cIdx >= 0 && cIdx < cardThemes.length) currentCardThemeIndex = cIdx;
+        }
+        if (savedShoeIdx !== null) {
+          const sIdx = Number(savedShoeIdx);
+          if (sIdx >= 0 && sIdx < shoeSizes.length) currentShoeIndex = sIdx;
+        }
+        if (savedAch !== null) {
+          unlockedAchievements = JSON.parse(savedAch) || {};
+        }
+        if (savedH17 !== null) {
+          dealerHitsSoft17 = savedH17 === 'true';
+        }
+        if (savedPayout !== null) {
+          blackjackPayoutMultiplier = Number(savedPayout) === 2 ? 2.0 : 1.5;
+        }
+      } catch (e) {
+        // Ignore storage errors in restricted iframes
+      }
+      applyTheme();
+      applyCardThemeButton();
+      applyShoeButton();
+      applyHouseRulesUI();
+      applyPerfectPairsUI();
+    }
+
+    function updateSavedStats() {
+      if (bankroll > highBankroll) {
+        highBankroll = bankroll;
+      }
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+      }
+      if (bankroll >= 1000 && !unlockedAchievements.high_roller) {
+        unlockedAchievements.high_roller = true;
+        achievementToastEl.textContent = '🏆 Unlocked: 💎 High Roller ($1,000+ Bankroll)!';
+      }
+      if (currentStreak >= 3 && !unlockedAchievements.streak_3) {
+        unlockedAchievements.streak_3 = true;
+        achievementToastEl.textContent = '🏆 Unlocked: 🔥 Hot Streak (3 Wins in a Row)!';
+      }
+      try {
+        localStorage.setItem('bj21_highBankroll', String(highBankroll));
+        localStorage.setItem('bj21_bestStreak', String(bestStreak));
+        localStorage.setItem('bj21_themeIdx', String(currentThemeIndex));
+        localStorage.setItem('bj21_cardThemeIdx', String(currentCardThemeIndex));
+        localStorage.setItem('bj21_shoeIdx', String(currentShoeIndex));
+        localStorage.setItem('bj21_achievements', JSON.stringify(unlockedAchievements));
+        localStorage.setItem('bj21_dealerH17', String(dealerHitsSoft17));
+        localStorage.setItem('bj21_bjPayout', String(blackjackPayoutMultiplier));
+      } catch (e) {
+        // Ignore storage errors in restricted iframes
+      }
+    }
+
+    // ==========================================
+    // 3. SYNTHESIZED SOUND EFFECTS (Web Audio API)
+    // ==========================================
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'card') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.07);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          osc.start(now);
+          osc.stop(now + 0.07);
+        } else if (type === 'chip') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1320, now + 0.06);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+          osc.start(now);
+          osc.stop(now + 0.06);
+        } else if (type === 'win') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.09); // E5
+          osc.frequency.setValueAtTime(783.99, now + 0.18); // G5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'lose') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.linearRampToValueAtTime(130, now + 0.25);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        // Ignore audio errors if blocked by browser autoplay policy
+      }
+    }
+
+    // ==========================================
+    // 4. GAME LOGIC, HI-LO COUNTER & STRATEGY COACH
+    // ==========================================
+
+    // Step 9: Hi-Lo Card Value (+1 for 2-6, 0 for 7-9, -1 for 10-A)
+    function getHiLoValue(card) {
+      if (['2', '3', '4', '5', '6'].includes(card.rank)) return 1;
+      if (['7', '8', '9'].includes(card.rank)) return 0;
+      return -1;
+    }
+
+    // Build and shuffle a fresh shoe (1, 2, or 6 decks) and reset Running Count
+    function createDeck() {
+      deck = [];
+      const numDecks = shoeSizes[currentShoeIndex];
+      for (let d = 0; d < numDecks; d++) {
+        for (const suit of suits) {
+          for (const rank of ranks) {
+            deck.push({ suit, rank });
+          }
+        }
+      }
+      // Shuffle using Fisher-Yates algorithm
+      for (let i = deck.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        const temp = deck[i];
+        deck[i] = deck[randomIndex];
+        deck[randomIndex] = temp;
+      }
+      runningCount = 0;
+    }
+
+    // Draw one card from the shoe; count it immediately unless it's the Dealer's face-down hole card
+    function drawCard(isHiddenHoleCard = false) {
+      if (deck.length < 4) {
+        createDeck();
+      }
+      const card = deck.pop();
+      if (!isHiddenHoleCard) {
+        runningCount += getHiLoValue(card);
+      }
+      return card;
+    }
+
+    // Reveal and count the Dealer's hidden hole card when the round finishes
+    function revealDealerHoleCard() {
+      if (!dealerHoleCounted && dealerHand.length >= 2) {
+        runningCount += getHiLoValue(dealerHand[1]);
+        dealerHoleCounted = true;
+      }
+    }
+
+    // Calculate the best 21 score for a hand of cards
+    function calculateScore(hand) {
+      let total = 0;
+      let aceCount = 0;
+
+      for (const card of hand) {
+        if (card.rank === 'A') {
+          total += 11;
+          aceCount += 1;
+        } else if (['J', 'Q', 'K'].includes(card.rank)) {
+          total += 10;
+        } else {
+          total += Number(card.rank);
+        }
+      }
+
+      // If total is over 21 and we have Aces counted as 11, convert Aces to 1
+      while (total > 21 && aceCount > 0) {
+        total -= 10;
+        aceCount -= 1;
+      }
+
+      return total;
+    }
+
+    // Check if a hand is "Soft" (contains an Ace currently counted as 11)
+    function isSoftHand(hand) {
+      let total = 0;
+      let aceCount = 0;
+      for (const card of hand) {
+        if (card.rank === 'A') {
+          total += 11;
+          aceCount += 1;
+        } else if (['J', 'Q', 'K'].includes(card.rank)) {
+          total += 10;
+        } else {
+          total += Number(card.rank);
+        }
+      }
+      while (total > 21 && aceCount > 0) {
+        total -= 10;
+        aceCount -= 1;
+      }
+      return aceCount > 0;
+    }
+
+    // Step 11: Check whether the Dealer must hit based on S17 vs H17 house rule
+    function shouldDealerHit() {
+      const score = calculateScore(dealerHand);
+      if (score < 17) return true;
+      if (score === 17 && dealerHitsSoft17 && isSoftHand(dealerHand)) return true;
+      return false;
+    }
+
+    // Step 10: Check if the player's initial 2 cards can be Split into two hands
+    function getCardPointValue(card) {
+      if (card.rank === 'A') return 11;
+      if (['10', 'J', 'Q', 'K'].includes(card.rank)) return 10;
+      return Number(card.rank);
+    }
+
+    function canSplitPair() {
+      if (isGameOver || isSplitMode || playerHand.length !== 2) return false;
+      if (bankroll < selectedBet * 2) return false;
+      return getCardPointValue(playerHand[0]) === getCardPointValue(playerHand[1]);
+    }
+
+    // Step 12: Evaluate Perfect Pairs ($5 Side Bet) on first two cards
+    function evaluatePerfectPairsSideBet(card1, card2) {
+      const sideBet = 5;
+      if (card1.rank !== card2.rank) {
+        bankroll -= sideBet;
+        ppResultPillEl.textContent = `No Pair on Side Bet (-$${sideBet})`;
+        ppResultPillEl.className = 'text-[11px] text-rose-300 font-semibold';
+        return;
+      }
+
+      // Matching rank! Check Perfect Suited (25:1), Colored (12:1), or Mixed (6:1)
+      const isRed1 = card1.suit === '♥' || card1.suit === '♦';
+      const isRed2 = card2.suit === '♥' || card2.suit === '♦';
+
+      if (card1.suit === card2.suit) {
+        const winAmt = sideBet * 25;
+        bankroll += winAmt;
+        playSound('win');
+        ppResultPillEl.textContent = `🎉 PERFECT SUITED PAIR (${card1.rank}${card1.suit})! Won +$${winAmt} (25:1)!`;
+        ppResultPillEl.className = 'text-[11px] text-amber-300 font-extrabold';
+      } else if (isRed1 === isRed2) {
+        const winAmt = sideBet * 12;
+        bankroll += winAmt;
+        playSound('win');
+        ppResultPillEl.textContent = `✨ COLORED PAIR (${card1.rank}${card1.suit} ${card2.rank}${card2.suit})! Won +$${winAmt} (12:1)!`;
+        ppResultPillEl.className = 'text-[11px] text-emerald-300 font-extrabold';
+      } else {
+        const winAmt = sideBet * 6;
+        bankroll += winAmt;
+        playSound('win');
+        ppResultPillEl.textContent = `✨ MIXED PAIR (${card1.rank}${card1.suit} ${card2.rank}${card2.suit})! Won +$${winAmt} (6:1)!`;
+        ppResultPillEl.className = 'text-[11px] text-emerald-300 font-bold';
+      }
+    }
+
+    // Step 13: Helper to check if 3 cards form a poker Straight (handles both Ace-high Q-K-A and Ace-low A-2-3)
+    function isThreeCardStraight(cards) {
+      const rankMap = {
+        '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
+        '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
+      };
+      const vals = cards.map((c) => rankMap[c.rank]).sort((a, b) => a - b);
+
+      // Standard consecutive check (e.g. 5-6-7 or 12-13-14)
+      if (vals[0] + 1 === vals[1] && vals[1] + 1 === vals[2]) {
+        return true;
+      }
+      // Ace-low check: A (14), 2, 3 -> [2, 3, 14]
+      if (vals[0] === 2 && vals[1] === 3 && vals[2] === 14) {
+        return true;
+      }
+      return false;
+    }
+
+    // Step 13: Evaluate 21+3 Poker ($5 Side Bet) using Player's 2 cards + Dealer's face-up card
+    function evaluate21Plus3SideBet(pCard1, pCard2, dUpCard) {
+      const sideBet = 5;
+      const threeCards = [pCard1, pCard2, dUpCard];
+      const handStr = `${pCard1.rank}${pCard1.suit} ${pCard2.rank}${pCard2.suit} ${dUpCard.rank}${dUpCard.suit}`;
+
+      const isFlush = pCard1.suit === pCard2.suit && pCard2.suit === dUpCard.suit;
+      const isTrips = pCard1.rank === pCard2.rank && pCard2.rank === dUpCard.rank;
+      const isStraight = isThreeCardStraight(threeCards);
+
+      if (isFlush && isTrips) {
+        const winAmt = sideBet * 100;
+        bankroll += winAmt;
+        playSound('win');
+        plus3ResultPillEl.textContent = `💎 SUITED TRIPS (${handStr})! Won +$${winAmt} (100:1)!`;
+        plus3ResultPillEl.className = 'text-[11px] text-amber-300 font-extrabold';
+      } else if (isFlush && isStraight) {
+        const winAmt = sideBet * 40;
+        bankroll += winAmt;
+        playSound('win');
+        plus3ResultPillEl.textContent = `🔥 STRAIGHT FLUSH (${handStr})! Won +$${winAmt} (40:1)!`;
+        plus3ResultPillEl.className = 'text-[11px] text-amber-300 font-extrabold';
+      } else if (isTrips) {
+        const winAmt = sideBet * 30;
+        bankroll += winAmt;
+        playSound('win');
+        plus3ResultPillEl.textContent = `🎉 THREE OF A KIND (${handStr})! Won +$${winAmt} (30:1)!`;
+        plus3ResultPillEl.className = 'text-[11px] text-emerald-300 font-extrabold';
+      } else if (isStraight) {
+        const winAmt = sideBet * 10;
+        bankroll += winAmt;
+        playSound('win');
+        plus3ResultPillEl.textContent = `🃏 STRAIGHT (${handStr})! Won +$${winAmt} (10:1)!`;
+        plus3ResultPillEl.className = 'text-[11px] text-emerald-300 font-bold';
+      } else if (isFlush) {
+        const winAmt = sideBet * 5;
+        bankroll += winAmt;
+        playSound('win');
+        plus3ResultPillEl.textContent = `♠️ FLUSH (${handStr})! Won +$${winAmt} (5:1)!`;
+        plus3ResultPillEl.className = 'text-[11px] text-emerald-300 font-bold';
+      } else {
+        bankroll -= sideBet;
+        plus3ResultPillEl.textContent = `No 21+3 Poker Hand (${handStr}) (-$${sideBet})`;
+        plus3ResultPillEl.className = 'text-[11px] text-rose-300 font-semibold';
+      }
+    }
+
+    // Return whichever hand the player is currently acting on (Hand 1 or Split Hand 2)
+    function getCurrentActiveHand() {
+      return (isSplitMode && activeSplitIndex === 1) ? splitHandB : playerHand;
+    }
+
+    // Record a completed hand into the Recent Hands History Log (stores snapshots of both hands)
+    function recordHandResult(badgeText, badgeStyle, summaryText, netAmount) {
+      const formattedNet = netAmount > 0
+        ? `+$${netAmount}`
+        : netAmount < 0
+          ? `-$${Math.abs(netAmount)}`
+          : '$0';
+      const netColor = netAmount > 0
+        ? 'text-emerald-300 font-bold'
+        : netAmount < 0
+          ? 'text-rose-300 font-bold'
+          : 'text-amber-200 font-semibold';
+
+      // Save deep copies of player hand(s) and dealer hand so tapping the row can display the exact cards
+      const savedPlayerCards = playerHand.map((c) => ({ suit: c.suit, rank: c.rank }));
+      const savedSplitCards = isSplitMode ? splitHandB.map((c) => ({ suit: c.suit, rank: c.rank })) : null;
+      const savedDealerCards = dealerHand.map((c) => ({ suit: c.suit, rank: c.rank }));
+
+      handHistory.unshift({
+        handNum: handsPlayed,
+        badgeText,
+        badgeStyle,
+        summaryText,
+        formattedNet,
+        netColor,
+        playerCards: savedPlayerCards,
+        splitCards: savedSplitCards,
+        dealerCards: savedDealerCards,
+        playerFinalScore: calculateScore(savedPlayerCards),
+        splitFinalScore: savedSplitCards ? calculateScore(savedSplitCards) : null,
+        dealerFinalScore: calculateScore(savedDealerCards),
+        expanded: false
+      });
+
+      if (handHistory.length > 5) {
+        handHistory.pop();
+      }
+
+      pushBankrollSnapshot();
+    }
+
+    // Helper to render mini visual cards inside an expanded Hand History row using active Card Theme
+    function renderMiniCardsHTML(cards) {
+      const cTheme = cardThemes[currentCardThemeIndex];
+      return cards.map((card) => {
+        const isRed = card.suit === '♥' || card.suit === '♦';
+        const colorClass = isRed ? cTheme.redColor : cTheme.blackColor;
+        return `<span class="inline-flex items-center justify-center ${cTheme.faceBg} ${colorClass} font-bold text-xs px-2 py-1 rounded shadow-sm border leading-none">${card.rank}${card.suit}</span>`;
+      }).join('');
+    }
+
+    // Recommend the mathematically optimal move based on Active Hand vs. Dealer Up-Card (Includes Pair Splitting!)
+    function getStrategyAdvice() {
+      const currentHand = getCurrentActiveHand();
+      if (isGameOver || currentHand.length === 0 || dealerHand.length === 0) {
+        return {
+          badge: 'Round Complete',
+          text: 'Click "New Hand" or press [Space] to deal the next round.'
+        };
+      }
+
+      const playerScore = calculateScore(currentHand);
+      const dealerUpScore = calculateScore([dealerHand[0]]);
+      const soft = isSoftHand(currentHand);
+      const activeHandBet = (isSplitMode && activeSplitIndex === 1) ? hand2Bet : hand1Bet;
+      const totalCommitted = isSplitMode ? (hand1Bet + hand2Bet) : activeBet;
+      const canDouble = currentHand.length === 2 && (bankroll >= totalCommitted + activeHandBet);
+      const canSurrender = !isSplitMode && currentHand.length === 2;
+      const handPrefix = isSplitMode ? `Hand ${activeSplitIndex + 1}: ` : '';
+      const badge = `${handPrefix}${soft ? `Soft ${playerScore}` : `Hard ${playerScore}`}`;
+
+      // Step 10: Check Pair Splitting Strategy FIRST when holding a splittable pair!
+      if (canSplitPair()) {
+        const pairVal = getCardPointValue(playerHand[0]);
+        const pairLabel = playerHand[0].rank === playerHand[1].rank ? `${playerHand[0].rank}s` : '10-value cards';
+        const pairBadge = `Pair of ${pairLabel} (${playerScore})`;
+
+        if (pairVal === 11 || pairVal === 8) {
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Always split Aces and 8s! Splitting 8s escapes a dangerous Hard 16.`
+          };
+        }
+        if (pairVal === 10) {
+          return {
+            badge: pairBadge,
+            text: `STAND [S] — Never split ${pairLabel}! A 20 is already a dominant pat hand.`
+          };
+        }
+        if (pairVal === 5) {
+          if (dealerUpScore <= 9 && canDouble) {
+            return {
+              badge: pairBadge,
+              text: `DOUBLE DOWN [D] — Never split 5s! Treat 5+5 as a strong 10 and Double Down.`
+            };
+          }
+          return {
+            badge: pairBadge,
+            text: `HIT [H] — Never split 5s! Keep your strong total of 10 intact and draw.`
+          };
+        }
+        if (pairVal === 9) {
+          if (dealerUpScore === 7 || dealerUpScore >= 10) {
+            return {
+              badge: pairBadge,
+              text: `STAND [S] — Keep your 18 with a pair of 9s against Dealer's ${dealerUpScore}.`
+            };
+          }
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Split 9s against Dealer's ${dealerUpScore} to press two strong 9s.`
+          };
+        }
+        if (pairVal === 7 && dealerUpScore <= 7) {
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Split 7s against Dealer's ${dealerUpScore} to escape a weak Hard 14.`
+          };
+        }
+        if (pairVal === 6 && dealerUpScore <= 6) {
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Split 6s against Dealer's weak bust card (${dealerUpScore}).`
+          };
+        }
+        if ((pairVal === 2 || pairVal === 3) && dealerUpScore <= 7) {
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Split ${pairVal}s against Dealer's ${dealerUpScore} to build two better hands.`
+          };
+        }
+        if (pairVal === 4 && (dealerUpScore === 5 || dealerUpScore === 6)) {
+          return {
+            badge: pairBadge,
+            text: `SPLIT PAIR [P] — Split 4s against Dealer's weak bust card (${dealerUpScore}).`
+          };
+        }
+      }
+
+      // Special 5-Card Charlie check when holding 4 cards
+      if (currentHand.length === 4 && (soft || playerScore <= 15)) {
+        return {
+          badge: `${badge} • 4 Cards`,
+          text: 'HIT [H] — 1 card away from a 5-Card Charlie (2x bonus payout)!'
+        };
+      }
+
+      // Step 6: Check Surrender opportunities on tough 2-card Hard hands (Hard 16 vs 9/10/A, Hard 15 vs 10)
+      if (!soft && canSurrender) {
+        if (playerScore === 16 && dealerUpScore >= 9) {
+          return {
+            badge,
+            text: `SURRENDER [U] — Hard 16 vs Dealer ${dealerUpScore} is a heavy underdog; save 50% of your bet.`
+          };
+        }
+        if (playerScore === 15 && dealerUpScore === 10) {
+          return {
+            badge,
+            text: 'SURRENDER [U] — Hard 15 vs Dealer 10 has high bust risk; bail out and keep half your bet.'
+          };
+        }
+      }
+
+      // 1. Check Double Down opportunities on first 2 cards
+      if (canDouble) {
+        if (playerScore === 11) {
+          return {
+            badge,
+            text: 'DOUBLE DOWN [D] — 11 is the best total to draw a 10-value card for 21!'
+          };
+        }
+        if (playerScore === 10 && dealerUpScore <= 9) {
+          return {
+            badge,
+            text: `DOUBLE DOWN [D] — Your 10 is strong against the Dealer's ${dealerUpScore}.`
+          };
+        }
+        if (playerScore === 9 && dealerUpScore >= 3 && dealerUpScore <= 6) {
+          return {
+            badge,
+            text: `DOUBLE DOWN [D] — Dealer shows a weak ${dealerUpScore}; press your advantage.`
+          };
+        }
+      }
+
+      // 2. Soft Hands (Ace counted as 11)
+      if (soft) {
+        if (playerScore >= 19) {
+          return {
+            badge,
+            text: `STAND [S] — ${playerScore} is already a strong pat hand.`
+          };
+        }
+        if (playerScore === 18) {
+          if (dealerUpScore >= 9) {
+            return {
+              badge,
+              text: `HIT [H] — Dealer shows a strong ${dealerUpScore}; try to improve your Soft 18.`
+            };
+          }
+          return {
+            badge,
+            text: `STAND [S] — Soft 18 holds up well against Dealer's ${dealerUpScore}.`
+          };
+        }
+        return {
+          badge,
+          text: `HIT [H] — With a Soft ${playerScore}, you cannot bust on the next card!`
+        };
+      }
+
+      // 3. Hard Hands
+      if (playerScore >= 17) {
+        return {
+          badge,
+          text: `STAND [S] — Bust risk is very high at ${playerScore}; hold your ground.`
+        };
+      }
+      if (playerScore >= 13 && playerScore <= 16) {
+        if (dealerUpScore <= 6) {
+          return {
+            badge,
+            text: `STAND [S] — Dealer shows a weak bust card (${dealerUpScore}); let the Dealer risk busting.`
+          };
+        }
+        return {
+          badge,
+          text: `HIT [H] — Dealer shows a strong ${dealerUpScore}, so standing on ${playerScore} is risky.`
+        };
+      }
+      if (playerScore === 12) {
+        if (dealerUpScore >= 4 && dealerUpScore <= 6) {
+          return {
+            badge,
+            text: `STAND [S] — Dealer is likely to bust showing ${dealerUpScore}.`
+          };
+        }
+        return {
+          badge,
+          text: `HIT [H] — Only a 10-value card busts a 12; draw against Dealer's ${dealerUpScore}.`
+        };
+      }
+
+      return {
+        badge,
+        text: `HIT [H] — At ${playerScore}, it's impossible to bust on your next card.`
+      };
+    }
+
+    // Helper to build a single card's HTML element (face-up or face-down) using active Card Theme
+    function createCardElement(card, isHidden) {
+      const cardDiv = document.createElement('div');
+      const cTheme = cardThemes[currentCardThemeIndex];
+
+      if (isHidden) {
+        cardDiv.className = `card-enter card-back ${cTheme.backClass} w-24 h-32 rounded-xl shadow-md border-2 border-white/80 p-2 flex items-center justify-center`;
+        cardDiv.innerHTML = `<span class="${cTheme.badgeClass} font-extrabold text-xs px-2 py-1 rounded border">21</span>`;
+        return cardDiv;
+      }
+
+      const isRed = card.suit === '♥' || card.suit === '♦';
+      cardDiv.className = `card-enter w-24 h-32 ${cTheme.faceBg} rounded-xl shadow-md border p-2 flex flex-col justify-between ${
+        isRed ? cTheme.redColor : cTheme.blackColor
+      }`;
+
+      cardDiv.innerHTML = `
+        <div class="text-left font-bold text-sm leading-none">${card.rank}<br><span class="text-xs">${card.suit}</span></div>
+        <div class="text-center text-2xl leading-none">${card.suit}</div>
+        <div class="text-right font-bold text-sm leading-none rotate-180">${card.rank}<br><span class="text-xs">${card.suit}</span></div>
+      `;
+      return cardDiv;
+    }
+
+    // ==========================================
+    // 5. DISPLAY / UI UPDATE FUNCTION
+    // ==========================================
+    function renderSparkline() {
+      const pts = bankrollHistory.length > 0 ? bankrollHistory : [500];
+      const minVal = Math.min(...pts, 450);
+      const maxVal = Math.max(...pts, 550);
+      const span = Math.max(50, maxVal - minVal);
+
+      sparklineRangeLabelEl.textContent = `Low: $${Math.min(...pts)} • High: $${Math.max(...pts)}`;
+
+      const width = 320;
+      const height = 72;
+      const padX = 10;
+      const padY = 8;
+      const usableW = width - padX * 2;
+      const usableH = height - padY * 2;
+
+      const coords = pts.map((val, i) => {
+        const x = pts.length === 1 ? width / 2 : padX + (i / (pts.length - 1)) * usableW;
+        const y = padY + usableH - ((val - minVal) / span) * usableH;
+        return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)), val };
+      });
+
+      // $500 starting baseline Y coordinate
+      const base500Y = Number((padY + usableH - ((500 - minVal) / span) * usableH).toFixed(1));
+      const polylinePoints = coords.map((c) => `${c.x},${c.y}`).join(' ');
+      const circlesHTML = coords.map((c, idx) => {
+        const isLast = idx === coords.length - 1;
+        const fill = c.val >= 500 ? '#34d399' : '#fb7185';
+        return `<circle cx="${c.x}" cy="${c.y}" r="${isLast ? 4 : 2.5}" fill="${fill}" />`;
+      }).join('');
+
+      sparklineSvgEl.innerHTML = `
+        <line x1="${padX}" y1="${base500Y}" x2="${width - padX}" y2="${base500Y}" stroke="rgba(255,255,255,0.2)" stroke-dasharray="4 4" stroke-width="1" />
+        <polyline fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${polylinePoints}" />
+        ${circlesHTML}
+      `;
+    }
+
+    function renderCountingTrainer() {
+      const totalShoeCards = shoeSizes[currentShoeIndex] * 52;
+      const remainingDecks = Math.max(0.25, deck.length / 52);
+      const trueCount = runningCount / remainingDecks;
+      const formattedRunning = runningCount > 0 ? `+${runningCount}` : String(runningCount);
+      const formattedTrue = trueCount > 0 ? `+${trueCount.toFixed(1)}` : trueCount.toFixed(1);
+
+      runningCountMiniEl.textContent = formattedRunning;
+      trueCountMiniEl.textContent = formattedTrue;
+      runningCountValEl.textContent = formattedRunning;
+      trueCountValEl.textContent = formattedTrue;
+
+      // Shoe Penetration percentage
+      const dealtCards = Math.max(0, totalShoeCards - deck.length);
+      const penPct = Math.min(100, Math.round((dealtCards / totalShoeCards) * 100));
+      penetrationPctEl.textContent = `${penPct}%`;
+      penetrationBarEl.style.width = `${penPct}%`;
+
+      // Shoe Heat & Betting Edge advice
+      if (trueCount >= 2) {
+        shoeHeatBadgeEl.textContent = '🔥 Hot Shoe (Player Edge)';
+        shoeHeatBadgeEl.className = 'text-sm font-extrabold text-amber-300 mt-1.5';
+        shoeHeatAdviceEl.textContent = 'Rich in 10s & Aces — favorable for higher bets!';
+      } else if (trueCount <= -2) {
+        shoeHeatBadgeEl.textContent = '❄️ Cold Shoe (Dealer Edge)';
+        shoeHeatBadgeEl.className = 'text-sm font-extrabold text-sky-300 mt-1.5';
+        shoeHeatAdviceEl.textContent = 'Rich in low cards — stick to minimum bets.';
+      } else {
+        shoeHeatBadgeEl.textContent = '⚖️ Neutral Shoe';
+        shoeHeatBadgeEl.className = 'text-sm font-extrabold text-emerald-200 mt-1.5';
+        shoeHeatAdviceEl.textContent = 'Balanced mix remaining — standard wager.';
+      }
+    }
+
+    function renderAchievements() {
+      achievementsListEl.innerHTML = '';
+      let unlockedCount = 0;
+
+      achievementDefs.forEach((ach) => {
+        const isUnlocked = Boolean(unlockedAchievements[ach.id]);
+        if (isUnlocked) unlockedCount += 1;
+
+        const badge = document.createElement('div');
+        badge.className = isUnlocked
+          ? 'flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-400/15 border border-amber-400/50 text-white shadow-sm'
+          : 'flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40';
+
+        badge.innerHTML = `
+          <span class="text-lg leading-none">${ach.icon}</span>
+          <div class="min-w-0 flex-1">
+            <div class="font-bold text-[11px] truncate ${isUnlocked ? 'text-amber-300' : 'text-white/50'}">
+              ${ach.title} ${isUnlocked ? '✓' : ''}
+            </div>
+            <div class="text-[10px] truncate">${ach.desc}</div>
+          </div>
+        `;
+        achievementsListEl.appendChild(badge);
+      });
+
+      achievementsCountEl.textContent = `${unlockedCount}/${achievementDefs.length}`;
+    }
+
+    function renderHistoryList() {
+      if (handHistory.length === 0) {
+        historyListEl.innerHTML = '<div class="text-white/50 italic py-2 text-center">Finish a hand to record your result here.</div>';
+        return;
+      }
+
+      historyListEl.innerHTML = '';
+      handHistory.forEach((item, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bg-white/5 hover:bg-white/10 border border-white/15 rounded-xl overflow-hidden transition cursor-pointer';
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'flex items-center justify-between gap-2 px-3.5 py-2.5';
+        headerRow.innerHTML = `
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-emerald-300 font-mono text-[11px]">#${item.handNum}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${item.badgeStyle}">${item.badgeText}</span>
+            <span class="text-white/90 font-medium">${item.summaryText}</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="${item.netColor}">${item.formattedNet}</span>
+            <span class="text-[10px] text-emerald-300/90 bg-black/30 px-2 py-0.5 rounded border border-white/10">
+              ${item.expanded ? '▲ Hide Cards' : '▼ Show Cards'}
+            </span>
+          </div>
+        `;
+        wrapper.appendChild(headerRow);
+
+        if (item.expanded) {
+          const detailsDiv = document.createElement('div');
+          detailsDiv.className = 'bg-black/40 border-t border-white/10 px-3.5 py-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs';
+          const splitSectionHTML = item.splitCards
+            ? `<div class="mt-2 pt-2 border-t border-white/10 flex flex-col gap-1">
+                 <span class="text-[11px] text-teal-300 font-semibold uppercase tracking-wide">
+                   Split Hand 2 (Total: ${item.splitFinalScore})
+                 </span>
+                 <div class="flex flex-wrap items-center gap-1.5">
+                   ${renderMiniCardsHTML(item.splitCards)}
+                 </div>
+               </div>`
+            : '';
+
+          detailsDiv.innerHTML = `
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[11px] text-emerald-300 font-semibold uppercase tracking-wide">
+                ${item.splitCards ? 'Hand 1' : 'Your Hand'} (Total: ${item.playerFinalScore})
+              </span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                ${renderMiniCardsHTML(item.playerCards)}
+              </div>
+              ${splitSectionHTML}
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[11px] text-amber-300 font-semibold uppercase tracking-wide">
+                Dealer's Hand (Total: ${item.dealerFinalScore})
+              </span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                ${renderMiniCardsHTML(item.dealerCards)}
+              </div>
+            </div>
+          `;
+          wrapper.appendChild(detailsDiv);
+        }
+
+        wrapper.addEventListener('click', () => {
+          handHistory[idx].expanded = !handHistory[idx].expanded;
+          playSound('card');
+          renderHistoryList();
+        });
+
+        historyListEl.appendChild(wrapper);
+      });
+    }
+
+    function renderTable() {
+      // If the round is over, make sure the Dealer's 2nd card is included in the Hi-Lo Running Count
+      if (isGameOver) {
+        revealDealerHoleCard();
+      }
+
+      // Render Dealer's Cards (hide 2nd card if round is still in progress)
+      dealerCardsEl.innerHTML = '';
+      dealerHand.forEach((card, index) => {
+        const hideThisCard = index === 1 && !isGameOver;
+        dealerCardsEl.appendChild(createCardElement(card, hideThisCard));
+      });
+
+      // Render Primary Player Hand (Hand 1)
+      playerCardsEl.innerHTML = '';
+      playerHand.forEach((card) => {
+        playerCardsEl.appendChild(createCardElement(card, false));
+      });
+
+      // Step 10: Render Split Hand 2 if in Split Mode
+      if (isSplitMode) {
+        playerHandsGridEl.className = 'w-full grid grid-cols-1 md:grid-cols-2 gap-4';
+        splitHandBoxEl.classList.remove('hidden');
+        hand1LabelEl.textContent = !isGameOver && activeSplitIndex === 0 ? '👉 Hand 1 (Active)' : 'Hand 1';
+        hand2LabelEl.textContent = !isGameOver && activeSplitIndex === 1 ? '👉 Split Hand 2 (Active)' : 'Split Hand 2';
+
+        // Highlight active hand box border
+        hand1BoxEl.className = (!isGameOver && activeSplitIndex === 0)
+          ? 'w-full bg-black/30 border-2 border-amber-400 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all'
+          : 'w-full bg-black/20 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all';
+
+        splitHandBoxEl.className = (!isGameOver && activeSplitIndex === 1)
+          ? 'w-full bg-black/30 border-2 border-teal-400 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all'
+          : 'w-full bg-black/20 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all';
+
+        splitStatusBadgeEl.textContent = isGameOver
+          ? 'Settled'
+          : activeSplitIndex === 1
+            ? `Playing ($${hand2Bet})`
+            : `Waiting ($${hand2Bet})`;
+
+        splitCardsEl.innerHTML = '';
+        splitHandB.forEach((card) => {
+          splitCardsEl.appendChild(createCardElement(card, false));
+        });
+        splitScoreEl.textContent = calculateScore(splitHandB);
+      } else {
+        playerHandsGridEl.className = 'w-full grid grid-cols-1 gap-4';
+        splitHandBoxEl.classList.add('hidden');
+        hand1LabelEl.textContent = 'Your Hand';
+        hand1BoxEl.className = 'w-full bg-black/20 border border-white/15 rounded-2xl p-5 sm:p-6 flex flex-col items-center shadow-lg transition-all';
+      }
+
+      // Update Dealer Score (only show 1st card value while hidden card is face-down)
+      if (!isGameOver && dealerHand.length > 0) {
+        const firstCardScore = calculateScore([dealerHand[0]]);
+        dealerScoreEl.textContent = `${firstCardScore} + ?`;
+      } else {
+        dealerScoreEl.textContent = calculateScore(dealerHand);
+      }
+
+      // Update Saved High Scores, Streaks, Achievements, Hi-Lo Counter & Sparkline
+      updateSavedStats();
+      applyHouseRulesUI();
+      applyPerfectPairsUI();
+      renderAchievements();
+      renderCountingTrainer();
+      renderSparkline();
+
+      // Update Player Score, 5-Card Charlie counter, Bankroll, Bet, and Header Stats
+      const currentHand = getCurrentActiveHand();
+      playerScoreEl.textContent = calculateScore(playerHand);
+      charlieProgressEl.textContent = `${Math.min(5, currentHand.length)}/5`;
+      bankrollAmountEl.textContent = bankroll;
+      betAmountEl.textContent = isGameOver ? selectedBet : (isSplitMode ? hand1Bet + hand2Bet : activeBet);
+      highBankrollEl.textContent = highBankroll;
+      streakCountEl.textContent = currentStreak;
+      bestStreakEl.textContent = bestStreak;
+      deckCountEl.textContent = deck.length;
+      handsPlayedEl.textContent = handsPlayed;
+      winsCountEl.textContent = wins;
+      lossesCountEl.textContent = losses;
+      pushesCountEl.textContent = pushes;
+
+      // Step 7 & 11: Update Win Rate & Session Net Profit (both inside drawer and mini header pill)
+      const decidedHands = wins + losses;
+      const winRatePct = decidedHands > 0 ? Math.round((wins / decidedHands) * 100) : 0;
+      winRateEl.textContent = `${winRatePct}%`;
+      winRateMiniEl.textContent = `${winRatePct}%`;
+
+      const netProfit = bankroll - 500 - (sessionReloads * 500);
+      if (netProfit > 0) {
+        netProfitEl.textContent = `+$${netProfit}`;
+        netProfitEl.className = 'text-lg font-extrabold text-emerald-300 mt-0.5';
+        netProfitMiniEl.textContent = `+$${netProfit}`;
+        netProfitMiniEl.className = 'text-emerald-300';
+      } else if (netProfit < 0) {
+        netProfitEl.textContent = `-$${Math.abs(netProfit)}`;
+        netProfitEl.className = 'text-lg font-extrabold text-rose-300 mt-0.5';
+        netProfitMiniEl.textContent = `-$${Math.abs(netProfit)}`;
+        netProfitMiniEl.className = 'text-rose-300';
+      } else {
+        netProfitEl.textContent = '$0';
+        netProfitEl.className = 'text-lg font-extrabold text-amber-200 mt-0.5';
+        netProfitMiniEl.textContent = '$0';
+        netProfitMiniEl.className = 'text-amber-200';
+      }
+
+      // Step 7: Show or hide Insurance Prompt Banner
+      const insCost = Math.max(1, Math.floor(activeBet / 2));
+      insuranceCostEl.textContent = insCost;
+      if (!isGameOver && insuranceOffered) {
+        insuranceBannerEl.classList.remove('hidden');
+      } else {
+        insuranceBannerEl.classList.add('hidden');
+      }
+
+      // Render Expandable Recent Hands History Log
+      renderHistoryList();
+
+      // Update Strategy Coach Banner
+      if (coachEnabled) {
+        coachBannerEl.classList.remove('hidden');
+        const advice = getStrategyAdvice();
+        coachTextEl.textContent = advice.text;
+        handTypeBadgeEl.textContent = advice.badge;
+      } else {
+        coachBannerEl.classList.add('hidden');
+      }
+
+      // Highlight selected chip & disable chip switching mid-hand
+      chipButtons.forEach((btn) => {
+        const val = Number(btn.getAttribute('data-bet'));
+        btn.disabled = !isGameOver || val > bankroll;
+        if (val === selectedBet) {
+          btn.classList.add('ring-2', 'ring-amber-400', 'scale-105');
+        } else {
+          btn.classList.remove('ring-2', 'ring-amber-400', 'scale-105');
+        }
+        btn.style.opacity = (!isGameOver || val > bankroll) ? '0.45' : '1';
+      });
+
+      // Step 14: Enable or disable Quick Wager Modifier buttons (½x, 2x, Max) between hands
+      const canAdjustWager = isGameOver && bankroll >= 10;
+      [btnWagerHalf, btnWagerDouble, btnWagerMax].forEach((btn) => {
+        btn.disabled = !canAdjustWager;
+        btn.style.opacity = canAdjustWager ? '1' : '0.45';
+      });
+
+      // Show reload button if bankroll hits $0 after a hand
+      if (isGameOver && bankroll < 10) {
+        btnResetBank.classList.remove('hidden');
+        btnDeal.disabled = true;
+      } else {
+        btnResetBank.classList.add('hidden');
+        btnDeal.disabled = !isGameOver;
+      }
+
+      // Enable or disable Hit, Stand, Double Down, Split Pair, and Surrender
+      btnHit.disabled = isGameOver;
+      btnStand.disabled = isGameOver;
+
+      const activeHandBet = (isSplitMode && activeSplitIndex === 1) ? hand2Bet : hand1Bet;
+      const totalCommitted = isSplitMode ? (hand1Bet + hand2Bet) : activeBet;
+      btnDouble.disabled = isGameOver || currentHand.length !== 2 || bankroll < (totalCommitted + activeHandBet);
+      btnSplit.disabled = !canSplitPair();
+      btnSurrender.disabled = isGameOver || isSplitMode || playerHand.length !== 2;
+    }
+
+    // ==========================================
+    // 6. PLAYER & DEALER ACTIONS
+    // ==========================================
+    function selectBet(amount) {
+      if (!isGameOver) return;
+      if (amount > bankroll) return;
+      selectedBet = amount;
+      activeBet = amount;
+      playSound('chip');
+      statusTextEl.textContent = `Wager set to $${selectedBet}. Click "New Hand" or press [Space] to deal!`;
+      subStatusTextEl.textContent = `Bankroll: $${bankroll}. Dealer ${dealerHitsSoft17 ? 'hits' : 'stands on'} Soft 17.`;
+      renderTable();
+    }
+
+    // Step 14: Quick Wager Adjuster (½x, 2x, Max)
+    function adjustQuickWager(mode) {
+      if (!isGameOver || bankroll < 10) return;
+
+      let nextBet = selectedBet;
+      if (mode === 'half') {
+        nextBet = Math.max(10, Math.floor(selectedBet / 2));
+      } else if (mode === 'double') {
+        nextBet = Math.min(bankroll, Math.max(10, selectedBet * 2));
+      } else if (mode === 'max') {
+        nextBet = bankroll;
+      }
+
+      nextBet = Math.min(bankroll, Math.max(10, nextBet));
+      selectedBet = nextBet;
+      activeBet = nextBet;
+      playSound('chip');
+
+      const labelMap = { half: 'Halved (½x)', double: 'Doubled (2x)', max: 'All-In (Max)' };
+      statusTextEl.textContent = `${labelMap[mode]} wager set to $${selectedBet}. Click "New Hand" or press [Space] to deal!`;
+      subStatusTextEl.textContent = `Bankroll: $${bankroll}. Dealer ${dealerHitsSoft17 ? 'hits' : 'stands on'} Soft 17.`;
+      renderTable();
+    }
+
+    function startNewHand() {
+      if (!isGameOver) return;
+      if (bankroll < 10) {
+        statusTextEl.textContent = 'Out of chips! Click "Reload $500" to keep playing.';
+        renderTable();
+        return;
+      }
+
+      // Clamp selected bet if bankroll dropped below previous bet size
+      if (selectedBet > bankroll) {
+        const availableChips = [100, 50, 25, 10].filter((c) => c <= bankroll);
+        selectedBet = availableChips.length > 0 ? availableChips[0] : bankroll;
+      }
+      activeBet = selectedBet;
+      hand1Bet = selectedBet;
+      hand2Bet = selectedBet;
+      isSplitMode = false;
+      splitHandB = [];
+      activeSplitIndex = 0;
+      insuranceOffered = false;
+      doubledThisHand = false;
+      dealerHoleCounted = false;
+
+      if (deck.length < 14) {
+        createDeck();
+      }
+      isGameOver = false;
+      handsPlayed += 1;
+      playSound('card');
+
+      // Standard deal from the shoe
+      playerHand = [drawCard(false), drawCard(false)];
+      dealerHand = [drawCard(false), drawCard(true)];
+
+      // Step 12: Evaluate Perfect Pairs ($5 Side Bet) if enabled and player has enough chips
+      if (perfectPairsEnabled && bankroll >= activeBet + 5) {
+        evaluatePerfectPairsSideBet(playerHand[0], playerHand[1]);
+      } else if (perfectPairsEnabled) {
+        ppResultPillEl.textContent = 'Perfect Pairs skipped (need $5 above active wager).';
+        ppResultPillEl.className = 'text-[11px] text-amber-300 font-medium';
+      }
+
+      // Step 13: Evaluate 21+3 Poker ($5 Side Bet) if enabled and player has enough chips
+      if (twentyOnePlus3Enabled && bankroll >= activeBet + 5) {
+        evaluate21Plus3SideBet(playerHand[0], playerHand[1], dealerHand[0]);
+      } else if (twentyOnePlus3Enabled) {
+        plus3ResultPillEl.textContent = '21+3 Poker skipped (need $5 above active wager).';
+        plus3ResultPillEl.className = 'text-[11px] text-teal-300 font-medium';
+      }
+
+      const playerScore = calculateScore(playerHand);
+      const dealerScore = calculateScore(dealerHand);
+      const insCost = Math.max(1, Math.floor(activeBet / 2));
+
+      // Check for natural 21 right on the deal
+      if (playerScore === 21) {
+        isGameOver = true;
+        revealDealerHoleCard();
+        if (dealerScore === 21) {
+          pushes += 1;
+          recordHandResult('PUSH', 'bg-amber-400/20 text-amber-200 border border-amber-400/40', 'Double Blackjack (21 vs 21)', 0);
+          statusTextEl.textContent = '🤝 Double Blackjack! It\'s a Push (Tie)!';
+          subStatusTextEl.textContent = 'Your wager is returned. Press [Space] or click "New Hand".';
+        } else {
+          const blackjackPayout = Math.floor(activeBet * blackjackPayoutMultiplier);
+          const ratioLabel = blackjackPayoutMultiplier === 2 ? '2:1' : '3:2';
+          bankroll += blackjackPayout;
+          wins += 1;
+          currentStreak += 1;
+          unlockAchievement('first_bj');
+          playSound('win');
+          recordHandResult('BLACKJACK', 'bg-amber-400 text-emerald-950', `Natural 21 vs Dealer ${dealerScore}`, blackjackPayout);
+          statusTextEl.textContent = `🎉 Blackjack! You won $${blackjackPayout} (${ratioLabel} payout)!`;
+          subStatusTextEl.textContent = `21 on the deal beats Dealer's ${dealerScore}. Press [Space] for next hand.`;
+        }
+      } else {
+        // Offer Insurance if Dealer's face-up card is an Ace and player can afford it
+        if (dealerHand[0].rank === 'A' && bankroll >= activeBet + insCost) {
+          insuranceOffered = true;
+          insuranceStatusPillEl.textContent = `Dealer shows an Ace! Insurance ($${insCost}) available.`;
+        } else {
+          insuranceStatusPillEl.textContent = 'Insurance 2:1 triggers when Dealer shows an Ace';
+        }
+        const splitHint = canSplitPair() ? ', Split Pair [P],' : '';
+        statusTextEl.textContent = `You have ${playerScore} (Wager: $${activeBet}). Dealer shows ${calculateScore([dealerHand[0]])}.`;
+        subStatusTextEl.textContent = `Choose Hit [H], Stand [S], Double [D]${splitHint} or Surrender [U].`;
+      }
+
+      renderTable();
+    }
+
+    // Step 10: Split a matching 2-card hand into two separate hands
+    function splitPairPlayer() {
+      if (!canSplitPair()) return;
+      insuranceOffered = false;
+
+      isSplitMode = true;
+      activeSplitIndex = 0;
+      hand1Bet = selectedBet;
+      hand2Bet = selectedBet;
+      activeBet = hand1Bet + hand2Bet;
+
+      const cardA = playerHand[0];
+      const cardB = playerHand[1];
+
+      // Deal a 2nd card to each split hand
+      playerHand = [cardA, drawCard(false)];
+      splitHandB = [cardB, drawCard(false)];
+      playSound('chip');
+
+      statusTextEl.textContent = `🔀 Pair Split! Playing Hand 1 (${calculateScore(playerHand)}) first.`;
+      subStatusTextEl.textContent = `Combined Wager: $${activeBet} ($${hand1Bet} per hand) • Dealer shows ${calculateScore([dealerHand[0]])}.`;
+
+      renderTable();
+    }
+
+    // Advance from Hand 1 to Split Hand 2, or finish the round against the Dealer
+    function finishOrAdvanceSplitHand() {
+      if (isSplitMode && activeSplitIndex === 0) {
+        activeSplitIndex = 1;
+        playSound('card');
+        const score2 = calculateScore(splitHandB);
+        statusTextEl.textContent = `👉 Now playing Split Hand 2 (Total: ${score2}). Hit [H] or Stand [S]?`;
+        subStatusTextEl.textContent = `Hand 1 locked at ${calculateScore(playerHand)} • Dealer shows ${calculateScore([dealerHand[0]])}.`;
+        renderTable();
+        return;
+      }
+
+      // Settle both hands (if split) or single hand against the Dealer
+      settleHandsAgainstDealer();
+    }
+
+    function settleHandsAgainstDealer() {
+      isGameOver = true;
+      revealDealerHoleCard();
+
+      if (!isSplitMode) {
+        // Standard 1-hand settlement using S17 / H17 House Rule
+        while (shouldDealerHit()) {
+          dealerHand.push(drawCard(false));
+        }
+
+        const playerScore = calculateScore(playerHand);
+        const dealerScore = calculateScore(dealerHand);
+
+        if (dealerScore > 21) {
+          wins += 1;
+          currentStreak += 1;
+          bankroll += activeBet;
+          if (doubledThisHand) unlockAchievement('double_win');
+          playSound('win');
+          recordHandResult('WIN', 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40', `You ${playerScore} vs Dealer Bust (${dealerScore})`, activeBet);
+          statusTextEl.textContent = `🎉 Dealer Busts with ${dealerScore}! You Win $${activeBet}!`;
+          subStatusTextEl.textContent = `Your ${playerScore} takes the pot. Press [Space] or click "New Hand".`;
+        } else if (playerScore > dealerScore) {
+          wins += 1;
+          currentStreak += 1;
+          bankroll += activeBet;
+          if (doubledThisHand) unlockAchievement('double_win');
+          playSound('win');
+          recordHandResult('WIN', 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40', `You ${playerScore} vs Dealer ${dealerScore}`, activeBet);
+          statusTextEl.textContent = `🏆 You Win $${activeBet}! Your ${playerScore} beats Dealer's ${dealerScore}!`;
+          subStatusTextEl.textContent = 'Change your chip bet or press [Space] for the next deal.';
+        } else if (dealerScore > playerScore) {
+          losses += 1;
+          currentStreak = 0;
+          bankroll -= activeBet;
+          playSound('lose');
+          recordHandResult('LOSS', 'bg-rose-500/30 text-rose-200 border border-rose-400/40', `You ${playerScore} vs Dealer ${dealerScore}`, -activeBet);
+          statusTextEl.textContent = `🏠 Dealer Wins ($${activeBet} lost). Dealer's ${dealerScore} beats your ${playerScore}.`;
+          subStatusTextEl.textContent = bankroll >= 10
+            ? 'Tap any hand in History below to inspect the cards, or press [Space] to deal.'
+            : 'Out of chips! Click "Reload $500" above.';
+        } else {
+          pushes += 1;
+          playSound('card');
+          recordHandResult('PUSH', 'bg-amber-400/20 text-amber-200 border border-amber-400/40', `Tied at ${playerScore}`, 0);
+          statusTextEl.textContent = `🤝 Push (Tie) at ${playerScore}! Your $${activeBet} bet is returned.`;
+          subStatusTextEl.textContent = 'Your win streak stays intact. Press [Space] to deal again.';
+        }
+
+        renderTable();
+        return;
+      }
+
+      // Split Mode: Settle Hand 1 and Hand 2 against the Dealer
+      const s1 = calculateScore(playerHand);
+      const s2 = calculateScore(splitHandB);
+
+      // Dealer draws if at least one split hand didn't bust
+      if (s1 <= 21 || s2 <= 21) {
+        while (shouldDealerHit()) {
+          dealerHand.push(drawCard(false));
+        }
+      }
+
+      const dScore = calculateScore(dealerHand);
+      let netSplitChips = 0;
+      let splitWins = 0;
+      let splitLosses = 0;
+
+      // Evaluate Hand 1 & Hand 2
+      [
+        { score: s1, bet: hand1Bet },
+        { score: s2, bet: hand2Bet }
+      ].forEach((h) => {
+        if (h.score > 21) {
+          netSplitChips -= h.bet;
+          splitLosses += 1;
+        } else if (dScore > 21 || h.score > dScore) {
+          netSplitChips += h.bet;
+          splitWins += 1;
+        } else if (dScore > h.score) {
+          netSplitChips -= h.bet;
+          splitLosses += 1;
+        }
+      });
+
+      bankroll += netSplitChips;
+      if (splitWins > splitLosses) {
+        wins += 1;
+        currentStreak += 1;
+        if (doubledThisHand) unlockAchievement('double_win');
+        playSound('win');
+      } else if (splitLosses > splitWins) {
+        losses += 1;
+        currentStreak = 0;
+        playSound('lose');
+      } else {
+        pushes += 1;
+        playSound('card');
+      }
+
+      const badge = netSplitChips > 0 ? 'SPLIT WIN' : netSplitChips < 0 ? 'SPLIT LOSS' : 'SPLIT PUSH';
+      const badgeStyle = netSplitChips > 0
+        ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40'
+        : netSplitChips < 0
+          ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
+          : 'bg-amber-400/20 text-amber-200 border border-amber-400/40';
+
+      recordHandResult(badge, badgeStyle, `Split (${s1} & ${s2}) vs Dealer ${dScore}`, netSplitChips);
+
+      if (netSplitChips > 0) {
+        statusTextEl.textContent = `🏆 Split Hands Won +$${netSplitChips}! (Hands: ${s1} & ${s2} vs Dealer ${dScore})`;
+      } else if (netSplitChips < 0) {
+        statusTextEl.textContent = `🏠 Split Hands Lost -$${Math.abs(netSplitChips)}. (Hands: ${s1} & ${s2} vs Dealer ${dScore})`;
+      } else {
+        statusTextEl.textContent = `🤝 Split Hands Broke Even ($0)! (Hands: ${s1} & ${s2} vs Dealer ${dScore})`;
+      }
+      subStatusTextEl.textContent = 'Tap the history row below to inspect all 3 hands, or press [Space] to deal!';
+
+      renderTable();
+    }
+
+    // Step 7: Buy Insurance (2:1 Side Bet against Dealer Natural 21)
+    function buyInsurance() {
+      if (isGameOver || !insuranceOffered) return;
+      insuranceOffered = false;
+
+      const insCost = Math.max(1, Math.floor(activeBet / 2));
+      const dealerScore = calculateScore(dealerHand);
+
+      if (dealerScore === 21) {
+        // Dealer has Natural 21! Insurance pays 2:1 (insCost * 2), offsetting the main bet loss!
+        isGameOver = true;
+        revealDealerHoleCard();
+        const insWin = insCost * 2;
+        const netOutcome = insWin - activeBet; // Usually $0 break-even
+        bankroll += netOutcome;
+        pushes += 1;
+        unlockAchievement('insured_save');
+        playSound('win');
+        insuranceStatusPillEl.textContent = `Insurance saved your hand! (+$${insWin} insurance payout)`;
+        recordHandResult('INSURED SAVE', 'bg-indigo-400 text-indigo-950', `Dealer had 21 (Insurance paid +$${insWin})`, netOutcome);
+        statusTextEl.textContent = `🛡️ Dealer had Blackjack (21)! Your Insurance paid $${insWin} and saved your bet!`;
+        subStatusTextEl.textContent = 'Press [Space] or click "New Hand" for the next deal.';
+      } else {
+        // Dealer does not have 21; deduct Insurance side bet and continue playing hand
+        bankroll -= insCost;
+        playSound('chip');
+        insuranceStatusPillEl.textContent = `No Dealer Blackjack (-$${insCost} insurance). Play on!`;
+        statusTextEl.textContent = `Dealer does not have 21 (-$${insCost} insurance). You have ${calculateScore(playerHand)}.`;
+        subStatusTextEl.textContent = 'Dealer cannot have 21 with their hidden card—play out your hand!';
+      }
+
+      renderTable();
+    }
+
+    function declineInsurance() {
+      if (isGameOver || !insuranceOffered) return;
+      insuranceOffered = false;
+      playSound('chip');
+      insuranceStatusPillEl.textContent = 'Insurance declined. Play out your hand!';
+      renderTable();
+    }
+
+    function hitPlayer() {
+      if (isGameOver) return;
+      insuranceOffered = false;
+
+      playSound('card');
+      const currentHand = getCurrentActiveHand();
+      currentHand.push(drawCard(false));
+      const playerScore = calculateScore(currentHand);
+
+      if (isSplitMode) {
+        // In Split Mode, if the active hand busts or reaches 21, move to Hand 2 or settle
+        if (playerScore >= 21) {
+          finishOrAdvanceSplitHand();
+        } else {
+          statusTextEl.textContent = `Hand ${activeSplitIndex + 1} drew a card (Total: ${playerScore}). Hit [H] or Stand [S]?`;
+          renderTable();
+        }
+        return;
+      }
+
+      if (playerScore > 21) {
+        isGameOver = true;
+        revealDealerHoleCard();
+        losses += 1;
+        currentStreak = 0;
+        bankroll -= activeBet;
+        playSound('lose');
+        recordHandResult('BUST', 'bg-rose-500/30 text-rose-200 border border-rose-400/40', `Busted with ${playerScore}`, -activeBet);
+        statusTextEl.textContent = `💥 Bust with ${playerScore}! You lost $${activeBet}.`;
+        subStatusTextEl.textContent = bankroll >= 10
+          ? 'Tap the history row below to review cards, or press [Space] for next hand.'
+          : 'You\'re out of chips! Click "Reload $500" above.';
+        renderTable();
+      } else if (playerHand.length >= 5) {
+        // Step 5: 5-Card Charlie Bonus Rule (5 cards without busting pays 2:1!)
+        isGameOver = true;
+        revealDealerHoleCard();
+        const charliePayout = activeBet * 2;
+        wins += 1;
+        currentStreak += 1;
+        bankroll += charliePayout;
+        unlockAchievement('charlie_win');
+        playSound('win');
+        recordHandResult('5-CARD CHARLIE', 'bg-purple-400 text-purple-950', `5 cards at ${playerScore} (2x Bonus!)`, charliePayout);
+        statusTextEl.textContent = `🌟 5-Card Charlie (${playerScore})! You won $${charliePayout} (2:1 bonus)!`;
+        subStatusTextEl.textContent = 'Drawing 5 cards without busting beats the house automatically!';
+        renderTable();
+      } else if (playerScore === 21) {
+        // Automatically stand when reaching 21 so the Dealer takes their turn
+        standPlayer();
+      } else {
+        statusTextEl.textContent = `You drew a card and have ${playerScore}. Hit [H] or Stand [S]?`;
+        subStatusTextEl.textContent = `Active wager: $${activeBet} • Cards: ${playerHand.length}/5 • Dealer shows ${calculateScore([dealerHand[0]])}.`;
+        renderTable();
+      }
+    }
+
+    function doubleDownPlayer() {
+      const currentHand = getCurrentActiveHand();
+      const activeHandBet = (isSplitMode && activeSplitIndex === 1) ? hand2Bet : hand1Bet;
+      const totalCommitted = isSplitMode ? (hand1Bet + hand2Bet) : activeBet;
+      if (isGameOver || currentHand.length !== 2 || bankroll < (totalCommitted + activeHandBet)) return;
+
+      insuranceOffered = false;
+      doubledThisHand = true;
+
+      if (isSplitMode) {
+        if (activeSplitIndex === 0) {
+          hand1Bet *= 2;
+        } else {
+          hand2Bet *= 2;
+        }
+        activeBet = hand1Bet + hand2Bet;
+        playSound('chip');
+        currentHand.push(drawCard(false));
+        finishOrAdvanceSplitHand();
+        return;
+      }
+
+      activeBet *= 2;
+      hand1Bet = activeBet;
+      playSound('chip');
+      playerHand.push(drawCard(false));
+      const playerScore = calculateScore(playerHand);
+
+      if (playerScore > 21) {
+        isGameOver = true;
+        revealDealerHoleCard();
+        losses += 1;
+        currentStreak = 0;
+        bankroll -= activeBet;
+        playSound('lose');
+        recordHandResult('BUST (2X)', 'bg-rose-500/30 text-rose-200 border border-rose-400/40', `Double Down bust at ${playerScore}`, -activeBet);
+        statusTextEl.textContent = `💥 Bust on Double Down (${playerScore})! You lost $${activeBet}.`;
+        subStatusTextEl.textContent = bankroll >= 10
+          ? 'Press [Space] or click "New Hand" to bounce back!'
+          : 'Out of chips! Click "Reload $500" above.';
+        renderTable();
+      } else {
+        // After drawing 1 card on Double Down, player must stand
+        standPlayer();
+      }
+    }
+
+    function surrenderPlayer() {
+      if (isGameOver || isSplitMode || playerHand.length !== 2) return;
+      insuranceOffered = false;
+
+      isGameOver = true;
+      revealDealerHoleCard();
+      const halfLoss = Math.floor(activeBet / 2);
+      losses += 1;
+      currentStreak = 0;
+      bankroll -= halfLoss;
+      playSound('card');
+
+      const playerScore = calculateScore(playerHand);
+      const dealerScore = calculateScore(dealerHand);
+      recordHandResult('SURRENDER', 'bg-rose-400/25 text-rose-200 border border-rose-400/40', `Folded ${playerScore} vs Dealer ${dealerScore}`, -halfLoss);
+
+      statusTextEl.textContent = `🏳️ Surrendered! You saved half your wager and lost only $${halfLoss}.`;
+      subStatusTextEl.textContent = bankroll >= 10
+        ? 'Smart bailout on a tough hand. Press [Space] or click "New Hand" to deal again.'
+        : 'Out of chips! Click "Reload $500" above.';
+
+      renderTable();
+    }
+
+    function standPlayer() {
+      if (isGameOver) return;
+      insuranceOffered = false;
+      finishOrAdvanceSplitHand();
+    }
+
+    // Step 12: Copy Career Stats Summary to Clipboard (with execCommand fallback)
+    function copyStatsSummary() {
+      const decided = wins + losses;
+      const winPct = decided > 0 ? Math.round((wins / decided) * 100) : 0;
+      const net = bankroll - 500 - (sessionReloads * 500);
+      const netStr = net >= 0 ? `+$${net}` : `-$${Math.abs(net)}`;
+      const unlockedCount = Object.keys(unlockedAchievements).filter((k) => unlockedAchievements[k]).length;
+      const summary = `21 Card Game Stats — Bankroll: $${bankroll} (Best: $${highBankroll}) | Win Rate: ${winPct}% (${wins}W-${losses}L-${pushes}P) | Net Profit: ${netStr} | Best Streak: ${bestStreak} | Trophies: ${unlockedCount}/6`;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(summary);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = summary;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = summary;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(ta);
+      }
+
+      playSound('chip');
+      statsActionFeedbackEl.textContent = '✅ Copied career stats summary to clipboard!';
+    }
+
+    // Step 12: Reset Career Records
+    function resetCareerRecords() {
+      highBankroll = Math.max(500, bankroll);
+      currentStreak = 0;
+      bestStreak = 0;
+      wins = 0;
+      losses = 0;
+      pushes = 0;
+      handsPlayed = 0;
+      sessionReloads = 0;
+      unlockedAchievements = {};
+      bankrollHistory = [bankroll];
+      handHistory = [];
+      try {
+        localStorage.removeItem('bj21_highBankroll');
+        localStorage.removeItem('bj21_bestStreak');
+        localStorage.removeItem('bj21_achievements');
+      } catch (e) {}
+      playSound('card');
+      statsActionFeedbackEl.textContent = '🔄 Career records, streaks, and trophies have been reset.';
+      renderTable();
+    }
+
+    // Connect buttons to functions
+    btnDeal.addEventListener('click', startNewHand);
+    btnHit.addEventListener('click', hitPlayer);
+    btnStand.addEventListener('click', standPlayer);
+    btnDouble.addEventListener('click', doubleDownPlayer);
+    btnSplit.addEventListener('click', splitPairPlayer);
+    btnSurrender.addEventListener('click', surrenderPlayer);
+    btnBuyInsurance.addEventListener('click', buyInsurance);
+    btnSkipInsurance.addEventListener('click', declineInsurance);
+    btnCopyStats.addEventListener('click', copyStatsSummary);
+    btnResetCareer.addEventListener('click', resetCareerRecords);
+
+    // Step 14: Connect Quick Wager Adjusters (½x, 2x, Max)
+    btnWagerHalf.addEventListener('click', () => adjustQuickWager('half'));
+    btnWagerDouble.addEventListener('click', () => adjustQuickWager('double'));
+    btnWagerMax.addEventListener('click', () => adjustQuickWager('max'));
+
+    btnPerfectPairs.addEventListener('click', () => {
+      perfectPairsEnabled = !perfectPairsEnabled;
+      playSound('chip');
+      ppResultPillEl.textContent = perfectPairsEnabled
+        ? 'Perfect Pairs ($5) armed for your next deal!'
+        : 'Toggle ON to play for pair bonuses';
+      ppResultPillEl.className = 'text-[11px] text-amber-300 font-semibold';
+      renderTable();
+    });
+
+    btn21Plus3.addEventListener('click', () => {
+      twentyOnePlus3Enabled = !twentyOnePlus3Enabled;
+      playSound('chip');
+      plus3ResultPillEl.textContent = twentyOnePlus3Enabled
+        ? '21+3 Poker ($5) armed for your next deal!'
+        : 'Combines your 2 cards + Dealer\'s up-card';
+      plus3ResultPillEl.className = 'text-[11px] text-teal-300 font-semibold';
+      renderTable();
+    });
+
+    // Collapsible Drawers (Analytics, Settings, Hi-Lo Counter & Achievements)
+    btnToggleAnalytics.addEventListener('click', () => {
+      analyticsExpanded = !analyticsExpanded;
+      if (analyticsExpanded) {
+        analyticsDrawerEl.classList.remove('hidden');
+        analyticsChevronEl.textContent = '▲ Hide Analytics';
+      } else {
+        analyticsDrawerEl.classList.add('hidden');
+        analyticsChevronEl.textContent = '▼ Show Analytics';
+      }
+      playSound('card');
+    });
+
+    btnToggleRules.addEventListener('click', () => {
+      rulesExpanded = !rulesExpanded;
+      if (rulesExpanded) {
+        rulesDrawerEl.classList.remove('hidden');
+        rulesChevronEl.textContent = '▲ Hide Settings';
+      } else {
+        rulesDrawerEl.classList.add('hidden');
+        rulesChevronEl.textContent = '▼ Show Settings';
+      }
+      playSound('card');
+    });
+
+    btnRuleS17.addEventListener('click', () => {
+      dealerHitsSoft17 = !dealerHitsSoft17;
+      playSound('chip');
+      renderTable();
+    });
+
+    btnRulePayout.addEventListener('click', () => {
+      blackjackPayoutMultiplier = blackjackPayoutMultiplier === 1.5 ? 2.0 : 1.5;
+      playSound('chip');
+      renderTable();
+    });
+
+    btnToggleCounter.addEventListener('click', () => {
+      counterExpanded = !counterExpanded;
+      if (counterExpanded) {
+        counterDrawerEl.classList.remove('hidden');
+        counterChevronEl.textContent = '▲ Hide Trainer';
+      } else {
+        counterDrawerEl.classList.add('hidden');
+        counterChevronEl.textContent = '▼ Show Trainer';
+      }
+      playSound('card');
+    });
+
+    btnToggleAchievements.addEventListener('click', () => {
+      achievementsExpanded = !achievementsExpanded;
+      if (achievementsExpanded) {
+        achievementsDrawerEl.classList.remove('hidden');
+        achievementsChevronEl.textContent = '▲ Hide Trophies';
+      } else {
+        achievementsDrawerEl.classList.add('hidden');
+        achievementsChevronEl.textContent = '▼ Show Trophies';
+      }
+      playSound('card');
+    });
+
+    chipButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const amount = Number(btn.getAttribute('data-bet'));
+        selectBet(amount);
+      });
+    });
+
+    btnResetBank.addEventListener('click', () => {
+      bankroll = 500;
+      sessionReloads += 1;
+      selectedBet = 25;
+      activeBet = 25;
+      currentStreak = 0;
+      pushBankrollSnapshot();
+      playSound('chip');
+      statusTextEl.textContent = 'Bankroll reloaded to $500! Ready to deal.';
+      subStatusTextEl.textContent = 'Select a chip and click "New Hand" or press [Space].';
+      renderTable();
+    });
+
+    btnClearHistory.addEventListener('click', () => {
+      handHistory = [];
+      playSound('chip');
+      renderTable();
+    });
+
+    btnShoe.addEventListener('click', () => {
+      currentShoeIndex = (currentShoeIndex + 1) % shoeSizes.length;
+      applyShoeButton();
+      createDeck();
+      updateSavedStats();
+      playSound('card');
+      renderTable();
+    });
+
+    btnTheme.addEventListener('click', () => {
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      applyTheme();
+      updateSavedStats();
+      playSound('chip');
+      renderTable();
+    });
+
+    btnCardTheme.addEventListener('click', () => {
+      currentCardThemeIndex = (currentCardThemeIndex + 1) % cardThemes.length;
+      applyCardThemeButton();
+      updateSavedStats();
+      playSound('card');
+      renderTable();
+    });
+
+    btnMute.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      btnMute.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+      if (soundEnabled) playSound('chip');
+    });
+
+    btnCoach.addEventListener('click', () => {
+      coachEnabled = !coachEnabled;
+      btnCoach.textContent = coachEnabled ? '💡 Coach: ON' : '💡 Coach: OFF';
+      renderTable();
+    });
+
+    // Keyboard Shortcuts: H = Hit, S = Stand, D = Double Down, P = Split Pair, U = Surrender, I = Buy Insurance, N = Skip Insurance, Space/Enter = New Hand
+    window.addEventListener('keydown', (event) => {
+      const key = event.key.toLowerCase();
+      if (!isGameOver) {
+        if (key === 'i' && insuranceOffered) {
+          event.preventDefault();
+          buyInsurance();
+        } else if (key === 'n' && insuranceOffered) {
+          event.preventDefault();
+          declineInsurance();
+        } else if (key === 'p' && !btnSplit.disabled) {
+          event.preventDefault();
+          splitPairPlayer();
+        } else if (key === 'h') {
+          event.preventDefault();
+          hitPlayer();
+        } else if (key === 's') {
+          event.preventDefault();
+          standPlayer();
+        } else if (key === 'd' && !btnDouble.disabled) {
+          event.preventDefault();
+          doubleDownPlayer();
+        } else if (key === 'u' && !btnSurrender.disabled) {
+          event.preventDefault();
+          surrenderPlayer();
+        }
+      } else {
+        if ((key === ' ' || key === 'enter') && !btnDeal.disabled) {
+          event.preventDefault();
+          startNewHand();
+        }
+      }
+    });
+
+    // Initialize saved stats, build deck, and deal first hand automatically
+    window.onload = function () {
+      loadSavedStats();
+      createDeck();
+      startNewHand();
+    };
+    // Register Offline Service Worker for PWA / Android APK packaging
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
